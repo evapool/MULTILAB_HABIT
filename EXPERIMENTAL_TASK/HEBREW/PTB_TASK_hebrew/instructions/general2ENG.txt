@@ -1,0 +1,4 @@
+The task will contain RESPOND periods as well as REST periods.
+(right arrow next, left arrow precedent)
+
+

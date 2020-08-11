@@ -1,0 +1,2 @@
+This is the basic screen you will be seeing during the experiment
+(right arrow next, left arrow precedent)

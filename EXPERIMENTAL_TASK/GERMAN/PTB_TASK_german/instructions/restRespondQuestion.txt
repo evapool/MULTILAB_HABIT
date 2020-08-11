@@ -1,0 +1,8 @@
+Wenn Sie denken, das hier ist ein Pausendurchlauf, drücken Sie 
+Wenn Sie denken, das hier ist ein Antwortdurchlauf, drücken Sie 
+ANTWORT
+PAUSE
+RICHTIG 
+Falsch. Das ist ein 
+ Durchlauf
+neuer Versuch

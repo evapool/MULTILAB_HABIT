@@ -1,0 +1,2 @@
+if you press the wrong key, no grey circle will appear
+(right arrow next, left arrow precedent)

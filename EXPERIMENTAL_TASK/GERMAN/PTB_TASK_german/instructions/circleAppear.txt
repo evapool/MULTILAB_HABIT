@@ -1,0 +1,2 @@
+Wenn Sie die passende Taste drücken, erscheint ein grauer Kreis. 
+(weiter: rechter Pfeil, zurück: linker Pfeil)

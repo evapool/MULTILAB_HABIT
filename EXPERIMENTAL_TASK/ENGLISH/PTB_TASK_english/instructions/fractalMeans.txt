@@ -1,0 +1,2 @@
+Each one of these images go with a particular action and a particular reward 
+(right arrow next, left arrow precedent)

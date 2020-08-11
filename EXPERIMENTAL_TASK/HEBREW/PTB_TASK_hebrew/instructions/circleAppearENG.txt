@@ -1,0 +1,2 @@
+When you press the corresponding key, you will see a grey circle appear
+(right arrow next, left arrow precedent)

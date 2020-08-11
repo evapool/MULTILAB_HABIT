@@ -1,0 +1,2 @@
+During the RESPOND periods a box will be lit
+(right arrow next, left arrow precedent)

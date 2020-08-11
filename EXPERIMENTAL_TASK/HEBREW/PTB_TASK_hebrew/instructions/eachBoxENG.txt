@@ -1,0 +1,2 @@
+Each box corresponds to a button
+(right arrow next, left arrow precedent)

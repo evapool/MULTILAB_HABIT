@@ -1,0 +1,9 @@
+Thank you for coming today to participate in our experiment.
+
+In this experiment, you will press buttons to accumulate food rewards.
+
+To go through these instructions please press:
+
+the RIGHT ARROW key to go to proceed with the next instruction
+the LEFT  ARROW key to return to the previous instruction
+

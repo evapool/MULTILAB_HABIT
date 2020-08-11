@@ -1,0 +1,1 @@
+Während der PAUSENdurchläufe werden alle Kästchen leer bleiben. (weiter mit rechts, zurück mit links)

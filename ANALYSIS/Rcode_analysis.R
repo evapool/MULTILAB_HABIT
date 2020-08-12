@@ -1274,7 +1274,6 @@ print(quest.1.efa$loadings,cutoff = 0.0)
 # create figure with EFA solution
 fa.diagram(quest.1.efa)
 
-
 # save the plot in the figures folder
 dev.print(pdf, file.path(figures_path,'S_Figure_PCA.pdf'))
 dev.off()
@@ -1327,7 +1326,7 @@ Confint(sslop.mSD, level = 0.95)
 # ----------------------------- PLOT EXPLORATORY MODEL ---------------------------
 
 # this tests the model predictions as we do in lmer but does not allow to display distributions
-AFF.means <- aggregate(PCA_CHANGE$normChangeBehav, by = list(PCA_CHANGE$ID, PCA_CHANGE$group, PCA_CHANGE$site, PCA_CHANGE$AFF_pSD, PCA_CHANGE$AFF_mSD, PCA_CHANGE$ML3), FUN='mean', na.rm = T) # extract means
+AFF.means <- aggregate(EFA_CHANGE$normChangeBehav, by = list(EFA_CHANGE$ID, EFA_CHANGE$group, EFA_CHANGE$site, EFA_CHANGE$AFF_pSD, EFA_CHANGE$AFF_mSD, EFA_CHANGE$ML3), FUN='mean', na.rm = T) # extract means
 colnames(AFF.means) <- c('ID','group','site', 'AFF_pSD', 'AFF_mSD','AFF', 'normChangeBehav')
 
 # ADJUSTED MEANS in case we want see the estimations from the model

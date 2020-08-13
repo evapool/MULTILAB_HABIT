@@ -90,7 +90,7 @@ CHANGE <- ddply(CHANGE, .(ID), transform, normChangeLiking = (mean(normLiking[pr
 CHANGE <- ddply(CHANGE, .(ID,prepost), countTrialxCondition)
 
 # get total number of participants included
-count(CHANGE$ID) # note that Caltech2 used a slightly different protocol so there are less repeat per condition
+plyr::count(CHANGE$ID) # note that Caltech2 used a slightly different protocol so there are less repeat per condition
 
 # subset by site
 C.CALTECH = subset(CHANGE, site == 'Caltech1')
@@ -98,6 +98,8 @@ C.CALTECH2= subset(CHANGE, site == 'Caltech2')
 C.HAMBURG = subset(CHANGE, site == 'Hamburg')
 C.SYDNEY  = subset(CHANGE, site == 'Sydney')
 C.TELAVIV = subset(CHANGE, site == 'Tel_Aviv')
+
+
 
 
 
@@ -688,6 +690,7 @@ int.t.BF[4]/int.t.BF[3]
 
 
 
+
 #---------------------------------------------------------------------------
 #                  OUTCOME DEVALUATION CHANGES META-ANALYSIS
 #---------------------------------------------------------------------------
@@ -1119,7 +1122,7 @@ colnames(CHANGE.means) <- c('ID','group','site', 'normChangeBehav')
 #--------------------------- FLEXMIX TO IDENTIFY CLUSTERS -----------------
 
 #  what is the number of clusters that better explains the data
-n_clusters <- stepFlexmix(normChangeBehav ~ group, data = CHANGE.means, control = list(verbose = 0), k = 1:5, nrep = 1000)
+n_clusters <- stepFlexmix(normChangeBehav ~ group, data = CHANGE.means, control = list(verbose = 0), k = 1:5, nrep = 200)
 getModel(n_clusters, "BIC")
 
 # get cluster size
@@ -1168,268 +1171,37 @@ dev.off()
 
 
 
-#-----------------------------------------------------------------------------
-#          SUPPLEMENTARY OUTCOME DEVALUATION CHANGES DISTRUBUTIONS LITTERATURE
-#-----------------------------------------------------------------------------
-
-# ------------------------- COMPAIRE DISTRIBUTIONS WITH OTHER STUDIES -------
-
-
-DEWIT <- ddply(DEWIT, .(subj), transform, normChangeBehav  = (normPressFreq[prepost=="post" & cue=='Valued'] - normPressFreq[prepost=="pre" & cue=='Valued']) - (normPressFreq[prepost=="post" & cue=='Devalued'] - normPressFreq[prepost=="pre" & cue=='Devalued']))
-TRICOMI <- ddply(TRICOMI, .(ID), transform, normChangeBehav  = (mean(normPressFreq[prepost=="post" & cue=='Valued']) - normPressFreq[prepost=="pre" & cue=='Valued']) - (mean(normPressFreq[prepost=="post" & cue=='Devalued']) - normPressFreq[prepost=="pre" & cue=='Devalued']))
-CECELI <- ddply(CECELI, .(ID), transform, normChangeBehav  = (normPressFreq[prepost=="post" & cue=='Valued'] - normPressFreq[prepost=="pre" & cue=='Valued']) - (normPressFreq[prepost=="post" & cue=='Devalued'] - normPressFreq[prepost=="pre" & cue=='Devalued']))
-
-
-# merge all datasets with the effect of interest
-CHANGE.mean <- ddply(CHANGE, .(ID,group,cue,prepost), summarise, normChangeBehav= mean((normChangeBehav))) # we need the mean not to increase the N artifically
-CHANGE.mean <- subset(CHANGE.mean, prepost == 'pre') # we need to subset not to have doubles
-CHANGE.mean <- subset(CHANGE.mean, cue == 'Valued') # we need to subset not to have doubles
-CHANGE.mean$ID <- 1:length(CHANGE.mean$ID) # let's change the id to avoid overlapping with others datasets
-CHANGE.mean$study <- factor(c("ICHB Study"))
-
-DEWIT.v <- subset(DEWIT, prepost == 'pre')
-DEWIT.v <- subset(DEWIT.v, cue == 'Valued') # we need to subset not to have doubles
-DEWIT.v$ID <- 1:length(DEWIT.v$subj)+1000 # let's change the id to avoid overlapping with others datasets
-DEWIT.v$site <- factor(c("DeWit et al., 2018"))
-DEWIT.v$study <- factor(c("DeWit et al., 2018"))
-
-TRICOMI.v <- subset(TRICOMI, prepost == 'pre')
-TRICOMI.v <- subset(TRICOMI.v, cue == 'Valued')
-TRICOMI.v$ID <- 1:length(TRICOMI.v$ID)+2000 # let's change the id to avoid overlapping with others datasets
-TRICOMI.v$study <- factor(c("Tricomi et al., 2009"))
-
-CECELI.mean <- ddply(CECELI, .(ID,group,cue,prepost), summarise, normChangeBehav= mean((normChangeBehav))) # we need the mean not to increase the N artifically
-CECELI.mean <- subset(CECELI.mean, prepost == 'pre') # we need to subset not to have doubles
-CECELI.mean <- subset(CECELI.mean, cue == 'Valued') # we need to subset not to have doubles
-CECELI.mean$ID <- 1:length(CECELI.mean$ID)+3000 # let's change the id to avoid overlapping with others datasets
-CECELI.mean$study <- factor(c("Ceceli et al., in prep"))
-
-
-V <- join(CHANGE.mean,DEWIT.v, type = 'full')
-V <- join(V,TRICOMI.v, type = 'full')
-V <- join(V,CECELI.mean, type = 'full')
-
-
-pp = ggplot(data = V, aes (x = study, y = normChangeBehav, fill = study)) +
-  geom_point(aes(color = study),position = position_jitterdodge(jitter.width = .5, jitter.height = 0))+
-  geom_violin(aes(color = study, fill = study),alpha = .3, size = .5)+ 
-  theme_bw() +
-  coord_flip()+
-  facet_grid(group~., scales = "free" )+
-  labs(
-    title = '',
-    x = 'Experiment site',
-    y = "Normalized Change in Behavior"
-  ) 
-
-
-
-
-
-
-
 
 
 #---------------------------------------------------------------------------
-#                             INDIVIDUAL DIFFERENCES
+#                       INDIVIDUAL DIFFERENCES 
 #---------------------------------------------------------------------------
+
 
 
 #------------------------ DATA REDUCTION TO EXTRACT ORTHOGONAL FACTORS ------
 
-# Check if questionnaire data are correlated between them to exclude the possibility to simply enter 
-# them in the 
-questionnaires <- aggregate(ANXIETY ~   BIS_total* TICS_CSSS,
-                            data = CHANGE, FUN = mean, na.action = na.pass)
-r.questionnaires = cor(questionnaires, use = "pairwise.complete.obs")
-
 # prepare database for the FA
-Q_ACP.means.ID <- aggregate(ANXIETY ~ ID * TICS_SOOV * TICS_PREPE * TICS_WODI * TICS_EXWO * TICS_LACK * TICS_SOTE * TICS_SOIS * TICS_WORY * TICS_WOOV * BIS_motor * BIS_attentional * BIS_nonplanning,
+Q_EFA.means.ID <- aggregate(ANXIETY ~ ID * TICS_SOOV * TICS_PREPE * TICS_WODI * TICS_EXWO * TICS_LACK * TICS_SOTE * TICS_SOIS * TICS_WORY * TICS_WOOV * BIS_motor * BIS_attentional * BIS_nonplanning,
                             data = CHANGE, FUN = mean, na.action = na.pass) # we do not include the total scales
-Q_ACP.means <- Q_ACP.means.ID
-Q_ACP.means$ID <- NULL
+Q_EFA.means <- Q_EFA.means.ID
+Q_EFA.means$ID <- NULL
 
 # quick look at the covarivance structure
-r.subscale = cor(Q_ACP.means, use = "pairwise.complete.obs")
-cor.plot(Q_ACP.means,numbers=TRUE,main="correlation matrix")
-names(Q_ACP.means)[names(Q_ACP.means) == 'V1'] <- 'STAI'
-
+r.subscale = cor(Q_EFA.means, use = "pairwise.complete.obs")
+cor.plot(Q_EFA.means,numbers=TRUE,main="correlation matrix")
+names(Q_EFA.means)[names(Q_EFA.means) == 'V1'] <- 'STAI'
 
 # check distributions before proceeding with FA
-describe (Q_ACP.means)
-pairs.panels(na.omit(Q_ACP.means))
+describe (Q_EFA.means)
+pairs.panels(na.omit(Q_EFA.means))
 
 # determine the number of factors
-nFactor  <- fa.parallel(Q_ACP.means, fm = "ml")
+nFactor  <- fa.parallel(Q_EFA.means, fm = "ml")
 
 
 # apply PCA with varimax rotation
-quest.1.efa <- fa(r = Q_ACP.means, nfactors = 4, rotate = "varimax", fm = "ml")
-
-print(quest.1.efa$loadings,cutoff = 0.0)
-
-
-# create figure with EFA solution
-fa.diagram(quest.1.efa)
-
-# save the plot in the figures folder
-dev.print(pdf, file.path(figures_path,'S_Figure_PCA.pdf'))
-dev.off()
-
-# calculate the factors loadings
-
-# s = factor.scores (Q_ACP.means, quest.1.efa, method= "Bartlett") # is a good alternative but I could not find enough litterature
-s = factor.scores (Q_ACP.means, quest.1.efa) # 
-
-
-#------------------------ USE FACTOR AS AS MODERATOR IN THE MAIN ANALYSIS ----------
-
-# merge with the FULL database
-axes <- s$scores
-
-
-# combine it with the participants ID
-dat <- cbind(Q_ACP.means.ID, axes)
-
-EFA_CHANGE <- join (CHANGE,dat, type = "full")
-
-# run full model
-change.inter = lmer(normPressFreq~ group*cue*prepost*(ML1+ML2+ML3+ML4) + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
-anova(change.inter)
-summary(change.inter)
-Confint(change.inter, level = 0.95) 
-
-
-# ----- assumptions check
-plot(fitted(change.inter),residuals(change.inter)) 
-qqnorm(residuals(change.inter))
-hist(residuals(change.inter))
-
-# test and different points of the model to understand interaction
-
-# Stress affective -1 SD people low in axiety/stress have effect of overtraining
-EFA_CHANGE$AFF_pSD <- scale(EFA_CHANGE$ML3, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
-sslop.pSD = lmer(normPressFreq~ group*cue*prepost*AFF_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
-anova(sslop.pSD)
-summary(sslop.pSD)
-Confint(sslop.pSD, level = 0.95) 
-
-# Social Isolation +1 SD people high in axiety/stress have effect of overtraining
-EFA_CHANGE$AFF_mSD <- scale(EFA_CHANGE$ML3, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
-sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*AFF_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
-anova(sslop.mSD)
-summary(sslop.mSD)
-Confint(sslop.mSD, level = 0.95) 
-
-# ----------------------------- PLOT EXPLORATORY MODEL ---------------------------
-
-# this tests the model predictions as we do in lmer but does not allow to display distributions
-AFF.means <- aggregate(EFA_CHANGE$normChangeBehav, by = list(EFA_CHANGE$ID, EFA_CHANGE$group, EFA_CHANGE$site, EFA_CHANGE$AFF_pSD, EFA_CHANGE$AFF_mSD, EFA_CHANGE$ML3), FUN='mean', na.rm = T) # extract means
-colnames(AFF.means) <- c('ID','group','site', 'AFF_pSD', 'AFF_mSD','AFF', 'normChangeBehav')
-
-# ADJUSTED MEANS in case we want see the estimations from the model
-acqC1.aov      <- aov_car(normChangeBehav  ~ group*AFF +Error(ID), data = AFF.means, observed = c("AFF"), factorize = F, anova_table = list(es = "pes"))
-acqC1.adjmeans <- emmeans(acqC1.aov, specs = c("group"), by = "AFF", at = list(AFF= c(-1, 1)))
-acqC1.adjmeans
-
-# this is a median split which is not the model prediction but allows to plot distributions
-
-# figure for AFF: Streess Affect
-AFF.means$StressAffect<- ntile(AFF.means$AFF, 2)
-AFF.means$StressAffect<- factor(AFF.means$StressAffect)
-
-# low stress affect
-lowAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '1'),
-                          observed = c("AFF"), factorize = F, anova_table = list(correction = "GG",es = "pes"))
-# effect sizes (90%CI)
-fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '1')))
-anova_stats(fit$`ID`)
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
-
-
-# Bayes factors 
-lowAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means, StressAffect  == '1'), 
-                     whichRandom = "ID", iterations = 50000)
-lowAnx.BF <- recompute(lowAnx.BF, iterations = 50000)
-lowAnx.BF[1]
-
-# high anxiety
-highAnx.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '2'),
-                          observed = c("RC1"), factorize = F, anova_table = list(correction = "GG",es = "pes"))
-# effect sizes (90%CI)
-fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '2')))
-anova_stats(fit$`ID`)
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
-# Bayes factors
-highAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means,  StressAffect == '2'), 
-                     whichRandom = "ID", iterations = 50000)
-highAnx.BF <- recompute(highAnx.BF, iterations = 50000)
-highAnx.BF[1]
-
-# rename variables for plot
-AFF.means$StressAffect    <- dplyr::recode(AFF.means$StressAffect, "1" = "Lower Stress Affect", "2" = "Higher Stress Affect" )
-AFF.means$group           <- dplyr::recode(AFF.means$group, "1-day" = "Moderate", "3-day" = "Extensive" )
-
-
-pp <- ggplot(AFF.means, aes(x = group, y = normChangeBehav, fill = group, color = group)) +
-  geom_point(alpha = .5, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
-  geom_boxplot(alpha=0.3, outlier.alpha = 0) + # do not display outlyers or they will overlap with individual datapoint
-  ylab('Behavioral adaptation index')+
-  xlab('Amount of Training')+
-  facet_grid(~StressAffect)+
-  scale_fill_manual(values=c("#56B4E9", "#0F2080")) +
-  scale_color_manual(values=c("#56B4E9", "#092C48")) +
-  theme_bw()
-
-ppp <- pp + theme_bw(base_size = 20, base_family = "Helvetica")+
-  theme(strip.text.x = element_text(size = 18, face = "bold"),
-        strip.background = element_rect(color="white", fill="white", linetype="solid"),
-        legend.position="none",
-        legend.text  = element_blank(),
-        #panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        axis.title.x = element_text(size = 22),
-        axis.title.y = element_text(size = 22))
-
-pdf(file.path(figures_path,'Figure_IndividualDifferences.pdf'))
-print(ppp)
-dev.off()
-
-
-
-
-
-#---------------------------------------------------------------------------
-#                       INDIVIDUAL DIFFERENCES APPROACH 2
-#---------------------------------------------------------------------------
-
-
-#------------------------ DATA REDUCTION TO EXTRACT ORTHOGONAL FACTORS ------
-
-
-
-# prepare database for the FA
-Q_ACP.means.ID <- aggregate(ANXIETY ~ ID * TICS_SOOV * TICS_PREPE * TICS_WODI * TICS_EXWO * TICS_LACK * TICS_SOTE * TICS_SOIS * TICS_WORY * TICS_WOOV * BIS_motor * BIS_attentional * BIS_nonplanning,
-                            data = CHANGE, FUN = mean, na.action = na.pass) # we do not include the total scales
-Q_ACP.means <- Q_ACP.means.ID
-Q_ACP.means$ID <- NULL
-
-# quick look at the covarivance structure
-r.subscale = cor(Q_ACP.means, use = "pairwise.complete.obs")
-cor.plot(Q_ACP.means,numbers=TRUE,main="correlation matrix")
-names(Q_ACP.means)[names(Q_ACP.means) == 'V1'] <- 'STAI'
-
-
-# check distributions before proceeding with FA
-describe (Q_ACP.means)
-pairs.panels(na.omit(Q_ACP.means))
-
-# determine the number of factors
-nFactor  <- fa.parallel(Q_ACP.means, fm = "ml")
-
-
-# apply PCA with varimax rotation
-quest.1.efa <- fa(r = Q_ACP.means, nfactors = 4, rotate = "oblimin", fm = "ml")
+quest.1.efa <- fa(r = Q_EFA.means, nfactors = 4, rotate = "oblimin", fm = "ml")
 
 print(quest.1.efa$loadings,cutoff = 0.0)
 
@@ -1437,11 +1209,11 @@ print(quest.1.efa$loadings,cutoff = 0.0)
 fa.diagram(quest.1.efa)
 
 # save the plot in the figures folder
-dev.print(pdf, file.path(figures_path,'S_Figure_EFA.pdf'))
+dev.print(pdf, file.path(figures_path,'Figure_EFA_oblimin.pdf'))
 dev.off()
 
 # calculate the factors loadings
-s = factor.scores (Q_ACP.means, quest.1.efa) # 
+s = factor.scores (Q_EFA.means, quest.1.efa) # 
 
 
 #------------------------ USE FACTOR AS AS MODERATOR IN THE MAIN ANALYSIS ----------
@@ -1450,7 +1222,7 @@ s = factor.scores (Q_ACP.means, quest.1.efa) #
 axes <- s$scores
 
 # combine it with the participants ID
-dat <- cbind(Q_ACP.means.ID, axes)
+dat <- cbind(Q_EFA.means.ID, axes)
 EFA_CHANGE <- join (CHANGE,dat, type = "full")
 
 # run full model for each factor individually
@@ -1534,7 +1306,7 @@ AFF.means$StressAffect<- factor(AFF.means$StressAffect)
 
 # low stress affect
 lowAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '1'),
-                          observed = c("AFF"), factorize = F, anova_table = list(correction = "GG",es = "pes"))
+                          factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
 fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '1')))
 anova_stats(fit$`ID`)
@@ -1549,7 +1321,160 @@ lowAnx.BF[1]
 
 # high anxiety
 highAnx.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '2'),
-                           observed = c("RC1"), factorize = F, anova_table = list(correction = "GG",es = "pes"))
+                           factorize = F, anova_table = list(correction = "GG",es = "pes"))
+# effect sizes (90%CI)
+fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '2')))
+anova_stats(fit$`ID`)
+eta_sq(fit, partial = TRUE, ci.lvl = .9)
+# Bayes factors
+highAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means,  StressAffect == '2'), 
+                      whichRandom = "ID", iterations = 50000)
+highAnx.BF <- recompute(highAnx.BF, iterations = 50000)
+highAnx.BF[1]
+
+# rename variables for plot
+AFF.means$StressAffect    <- dplyr::recode(AFF.means$StressAffect, "1" = "Lower Stress Affect", "2" = "Higher Stress Affect" )
+AFF.means$group           <- dplyr::recode(AFF.means$group, "1-day" = "Moderate", "3-day" = "Extensive" )
+
+
+pp <- ggplot(AFF.means, aes(x = group, y = normChangeBehav, fill = group, color = group)) +
+  #geom_boxplot(alpha=0.3, outlier.alpha = 0) + # do not display outlyers or they will overlap with individual datapoint
+  geom_point(alpha = .5, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
+  stat_summary(fun = mean, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75, size = 1, linetype = "solid") +
+  geom_violin(aes(x = group, y = normChangeBehav, fill = group, color = group), alpha = 0.1 ,width=0.5, size=0.2)+
+  ylab('Behavioral adaptation index')+
+  xlab('Amount of Training')+
+  facet_grid(~StressAffect)+
+  scale_fill_manual(values=c("#56B4E9", "#0F2080")) +
+  scale_color_manual(values=c("#56B4E9", "#092C48")) +
+  theme_bw()
+
+ppp <- pp + theme_bw(base_size = 20, base_family = "Helvetica")+
+  theme(strip.text.x = element_text(size = 18, face = "bold"),
+        strip.background = element_rect(color="white", fill="white", linetype="solid"),
+        legend.position="none",
+        legend.text  = element_blank(),
+        #panel.grid.major = element_blank(),
+        #panel.grid.minor = element_blank(),
+        axis.title.x = element_text(size = 22),
+        axis.title.y = element_text(size = 22))
+
+pdf(file.path(figures_path,'Figure_IndividualDifferences.pdf'))
+print(ppp)
+dev.off()
+
+
+
+
+#---------------------------------------------------------------------------
+#  SUPPLEMENTARY STARTEGY 1: INDIVIDUAL DIFFERENCES APPROACH 
+#---------------------------------------------------------------------------
+
+# non collinar factor for ancova-like approach
+
+#------------------------ DATA REDUCTION TO EXTRACT ORTHOGONAL FACTORS ------
+
+
+
+# prepare database for the FA
+Q_EFA.means.ID <- aggregate(ANXIETY ~ ID * TICS_SOOV * TICS_PREPE * TICS_WODI * TICS_EXWO * TICS_LACK * TICS_SOTE * TICS_SOIS * TICS_WORY * TICS_WOOV * BIS_motor * BIS_attentional * BIS_nonplanning,
+                            data = CHANGE, FUN = mean, na.action = na.pass) # we do not include the total scales
+Q_EFA.means <- Q_EFA.means.ID
+Q_EFA.means$ID <- NULL
+
+# quick look at the covarivance structure
+r.subscale = cor(Q_EFA.means, use = "pairwise.complete.obs")
+cor.plot(Q_EFA.means,numbers=TRUE,main="correlation matrix")
+names(Q_EFA.means)[names(Q_EFA.means) == 'V1'] <- 'STAI'
+
+# check distributions before proceeding with FA
+describe (Q_EFA.means)
+pairs.panels(na.omit(Q_EFA.means))
+
+# determine the number of factors
+nFactor  <- fa.parallel(Q_EFA.means, fm = "ml")
+
+
+# apply EFA with varimax rotation
+quest.1.efa <- fa(r = Q_EFA.means, nfactors = 4, rotate = "varimax", fm = "ml")
+
+print(quest.1.efa$loadings,cutoff = 0.0)
+
+# create figure with EFA solution
+fa.diagram(quest.1.efa)
+
+# save the plot in the figures folder
+dev.print(pdf, file.path(figures_path,'Figure_EFA_varimax.pdf'))
+dev.off()
+
+# calculate the factors loadings
+s = factor.scores (Q_EFA.means, quest.1.efa) # 
+
+
+#------------------------ USE FACTOR AS AS MODERATOR IN THE MAIN ANALYSIS ----------
+
+# merge with the FULL database
+axes <- s$scores
+
+# combine it with the participants ID
+dat <- cbind(Q_EFA.means.ID, axes)
+EFA_CHANGE <- join (CHANGE,dat, type = "full")
+
+# run full model for each factor simoutanously
+inter.whole = lmer(normPressFreq~ group*cue*prepost*(ML1+ML2+ML3+ML4) + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
+anova(inter.whole)
+summary(inter.whole)
+Confint(inter.whole, level = 0.95) 
+
+# ----- assumptions check
+plot(fitted(inter.whole),residuals(inter.whole)) 
+qqnorm(residuals(inter.whole))
+hist(residuals(inter.whole))
+
+# test and different points of the model to understand interaction
+
+# Stress affective -1 SD people low in axiety/stress have effect of overtraining
+EFA_CHANGE$AFF_pSD <- scale(EFA_CHANGE$ML3, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
+sslop.pSD = lmer(normPressFreq~ group*cue*prepost*AFF_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
+anova(sslop.pSD)
+summary(sslop.pSD)
+Confint(sslop.pSD, level = 0.95) 
+
+# Social Isolation +1 SD people high in axiety/stress have effect of overtraining
+EFA_CHANGE$AFF_mSD <- scale(EFA_CHANGE$ML3, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
+sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*AFF_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
+anova(sslop.mSD)
+summary(sslop.mSD)
+Confint(sslop.mSD, level = 0.95) 
+
+# ----------------------------- PLOT EXPLORATORY MODEL ---------------------------
+
+# this tests the model predictions as we do in lmer but does not allow to display distributions
+AFF.means <- aggregate(EFA_CHANGE$normChangeBehav, by = list(EFA_CHANGE$ID, EFA_CHANGE$group, EFA_CHANGE$site, EFA_CHANGE$AFF_pSD, EFA_CHANGE$AFF_mSD, EFA_CHANGE$ML3), FUN='mean', na.rm = T) # extract means
+colnames(AFF.means) <- c('ID','group','site', 'AFF_pSD', 'AFF_mSD','AFF', 'normChangeBehav')
+
+# figure for AFF: Streess Affect
+AFF.means$StressAffect<- ntile(AFF.means$AFF, 2)
+AFF.means$StressAffect<- factor(AFF.means$StressAffect)
+
+# low stress affect
+lowAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '1'),
+                           factorize = F, anova_table = list(correction = "GG",es = "pes"))
+# effect sizes (90%CI)
+fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '1')))
+anova_stats(fit$`ID`)
+eta_sq(fit, partial = TRUE, ci.lvl = .9)
+
+
+# Bayes factors 
+lowAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means, StressAffect  == '1'), 
+                     whichRandom = "ID", iterations = 50000)
+lowAnx.BF <- recompute(lowAnx.BF, iterations = 50000)
+lowAnx.BF[1]
+
+# high anxiety
+highAnx.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '2'),
+                            factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
 fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '2')))
 anova_stats(fit$`ID`)
@@ -1567,7 +1492,8 @@ AFF.means$group           <- dplyr::recode(AFF.means$group, "1-day" = "Moderate"
 
 pp <- ggplot(AFF.means, aes(x = group, y = normChangeBehav, fill = group, color = group)) +
   geom_point(alpha = .5, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
-  geom_boxplot(alpha=0.3, outlier.alpha = 0) + # do not display outlyers or they will overlap with individual datapoint
+  stat_summary(fun = mean, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75, size = 1, linetype = "solid") +
+  geom_violin(aes(x = group, y = normChangeBehav, fill = group, color = group), alpha = 0.1 ,width=0.5, size=0.2)+
   ylab('Behavioral adaptation index')+
   xlab('Amount of Training')+
   facet_grid(~StressAffect)+
@@ -1581,80 +1507,257 @@ ppp <- pp + theme_bw(base_size = 20, base_family = "Helvetica")+
         legend.position="none",
         legend.text  = element_blank(),
         #panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
+        #panel.grid.minor = element_blank(),
         axis.title.x = element_text(size = 22),
         axis.title.y = element_text(size = 22))
 
-pdf(file.path(figures_path,'Figure_IndividualDifferences_approach2.pdf'))
+pdf(file.path(figures_path,'Figure_IndividualDifferences_S1.pdf'))
 print(ppp)
 dev.off()
 
 
-
-
 #-----------------------------------------------------------------------------
-#          SUPPLEMENTARY SEPARATE TESTS FOR ANXIETY AND WORRIES
+# SUPPLEMENTARY STARTEGY 2: SEPARATE TESTS FOR ANXIETY AND WORRIES
 #-----------------------------------------------------------------------------
 
 # we conclude by intpreting our results in terms of anxiety and chronic worries 
 # let make sure that is not an artifact of the EFA 
 
 # -------------------- ANXIETY ----------------------------------------
-change.inter = lmer(normPressFreq~ group*cue*prepost*ANXIETY + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = PCA_CHANGE, REML=FALSE)
-anova(change.inter)
-summary(change.inter)
-Confint(change.inter, level = 0.95) 
+inter.anxiety = lmer(normPressFreq~ group*cue*prepost*ANXIETY + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
+anova(inter.anxiety)
+summary(inter.anxiety)
+Confint(inter.anxiety, level = 0.95) 
 
 # ----- assumptions check
-plot(fitted(change.inter),residuals(change.inter)) 
-qqnorm(residuals(change.inter))
-hist(residuals(change.inter))
+plot(fitted(inter.anxiety),residuals(inter.anxiety)) 
+qqnorm(residuals(inter.anxiety))
+hist(residuals(inter.anxiety))
 
 # test and different points of the model to understand interaction
 
 # ANXIETY -1 SD people low in axiety/stress have effect of overtraining
-EFA_CHANGE$AFF_pSD <- scale(EFA_CHANGE$ANXIETY, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
-sslop.pSD = lmer(normPressFreq~ group*cue*prepost*AFF_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = PCA_CHANGE, REML=FALSE)
+CHANGE$ANX_pSD <- scale(CHANGE$ANXIETY, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
+sslop.pSD = lmer(normPressFreq~ group*cue*prepost*ANX_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
 anova(sslop.pSD)
 summary(sslop.pSD)
 Confint(sslop.pSD, level = 0.95) 
 
-# ANXiETY +1 SD people high in axiety/stress have effect of overtraining
-EFA_CHANGE$AFF_mSD <- scale(EFA_CHANGE$ANXIETY, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
-sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*AFF_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = PCA_CHANGE, REML=FALSE)
+# ANXIETY +1 SD people high in axiety/stress have effect of overtraining
+CHANGE$ANX_mSD <- scale(CHANGE$ANXIETY, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
+sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*ANX_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
 anova(sslop.mSD)
 summary(sslop.mSD)
 Confint(sslop.mSD, level = 0.95) 
 
 
 
-
 # -------------------- CHRONIC WORRIES ----------------------------------------
-change.inter = lmer(normPressFreq~ group*cue*prepost*TICS_WORY + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = PCA_CHANGE, REML=FALSE)
-anova(change.inter)
-summary(change.inter)
-Confint(change.inter, level = 0.95) 
+inter.wory = lmer(normPressFreq~ group*cue*prepost*TICS_WORY + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
+anova(inter.wory)
+summary(inter.wory )
+Confint(inter.wory , level = 0.95) 
 
 # ----- assumptions check
-plot(fitted(change.inter),residuals(change.inter)) 
-qqnorm(residuals(change.inter))
-hist(residuals(change.inter))
+plot(fitted(inter.wory),residuals(inter.wory)) 
+qqnorm(residuals(inter.wory))
+hist(residuals(inter.wory))
 
 # test and different points of the model to understand interaction
 
 # WORRIES -1 SD people low in axiety/stress have effect of overtraining
-EFA_CHANGE$AFF_pSD <- scale(EFA_CHANGE$TICS_WORY, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
-sslop.pSD = lmer(normPressFreq~ group*cue*prepost*AFF_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = PCA_CHANGE, REML=FALSE)
+CHANGE$WORY_pSD <- scale(CHANGE$TICS_WORY, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
+sslop.pSD = lmer(normPressFreq~ group*cue*prepost*WORY_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
 anova(sslop.pSD)
 summary(sslop.pSD)
 Confint(sslop.pSD, level = 0.95) 
 
 # WORRIES +1 SD people high in axiety/stress have effect of overtraining
-EFA_CHANGE$AFF_mSD <- scale(EFA_CHANGE$TICS_WORY, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
-sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*AFF_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = PCA_CHANGE, REML=FALSE)
+CHANGE$WORY_mSD <- scale(CHANGE$TICS_WORY, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
+sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*WORY_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
 anova(sslop.mSD)
 summary(sslop.mSD)
 Confint(sslop.mSD, level = 0.95) 
+
+
+
+# -------------------- PLOTS ----------------------------------------
+
+
+
+# *********  ANXIETY   ***************************************************
+# this tests the model predictions as we do in lmer but does not allow to display distributions
+ANX.means <- aggregate(CHANGE$normChangeBehav, by = list(CHANGE$ID, CHANGE$group, CHANGE$site, CHANGE$ANXIETY), FUN='mean', na.rm = T) # extract means
+colnames(ANX.means) <- c('ID','group','site','ANXIETY', 'normChangeBehav')
+# create median splits
+ANX.means$AnxietySplit <- factor(ntile(ANX.means$ANXIETY, 2))
+plyr::count(ANX.means$ID)
+
+# low anxiety affect
+lowAnx.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(ANX.means, AnxietySplit == '1'),
+                          factorize = F, anova_table = list(correction = "GG",es = "pes"))
+# effect sizes (90%CI)
+fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data = subset(ANX.means, AnxietySplit == '1')))
+eta_sq(fit, partial = TRUE, ci.lvl = .9) # attention this might be slightly off since is estimated with aov (type 1 anvoa) 
+# Bayes factors 
+lowAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(ANXWORY.means, AnxietySplit == '1'), 
+                     whichRandom = "ID", iterations = 50000)
+lowAnx.BF <- recompute(lowAnx.BF, iterations = 50000)
+lowAnx.BF[1]
+
+# high worries
+highAnx.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(ANX.means, AnxietySplit == '2'),
+                            factorize = F, anova_table = list(correction = "GG",es = "pes"))
+# effect sizes (90%CI)
+fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data = subset(ANX.means, AnxietySplit == '2')))
+eta_sq(fit, partial = TRUE, ci.lvl = .9)
+# Bayes factors
+highAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(ANXWORY.means, AnxietySplit == '2'), 
+                      whichRandom = "ID", iterations = 50000)
+highAnx.BF <- recompute(highAnx.BF, iterations = 50000)
+highAnx.BF[1]
+
+
+# *********  WORRIES   ***************************************************
+# this tests the model predictions as we do in lmer but does not allow to display distributions
+WORY.means <- aggregate(CHANGE$normChangeBehav, by = list(CHANGE$ID, CHANGE$group, CHANGE$site, CHANGE$TICS_WORY), FUN='mean', na.rm = T) # extract means
+colnames(WORY.means) <- c('ID','group','site','TICS_WORY', 'normChangeBehav')
+# create median splits
+WORY.means$WorriesSplit <- factor(ntile(WORY.means$TICS_WORY, 2))
+plyr::count(WORY.means$ID)
+
+# low anxiety affect
+lowWory.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(WORY.means, WorriesSplit == '1'),
+                           factorize = F, anova_table = list(correction = "GG",es = "pes"))
+# effect sizes (90%CI)
+fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data = subset(WORY.means, WorriesSplit == '1')))
+eta_sq(fit, partial = TRUE, ci.lvl = .9)
+# Bayes factors 
+lowWory.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(WORY.means, WorriesSplit == '1'), 
+                     whichRandom = "ID", iterations = 50000)
+lowWory.BF <- recompute(lowWory.BF, iterations = 50000)
+lowWory.BF[1]
+
+# high anxiety
+highWory.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(WORY.means, WorriesSplit  == '2'),
+                            factorize = F, anova_table = list(correction = "GG",es = "pes"))
+# effect sizes (90%CI)
+fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data = subset(WORY.means, WorriesSplit  == '2')))
+eta_sq(fit, partial = TRUE, ci.lvl = .9)
+# Bayes factors
+highWory.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(WORY.means, WorriesSplit  == '2'), 
+                      whichRandom = "ID", iterations = 50000)
+highWory.BF <- recompute(highWory.BF, iterations = 50000)
+highWory.BF[1]
+
+
+
+# ------------- Create databse and do figure
+
+# this tests the model predictions as we do in lmer but does not allow to display distributions
+ANXWORY.means <- aggregate(CHANGE$normChangeBehav, by = list(CHANGE$ID, CHANGE$group, CHANGE$site, CHANGE$TICS_WORY, CHANGE$ANXIETY), FUN='mean', na.rm = T) # extract means
+colnames(ANXWORY.means) <- c('ID','group','site','TICS_WORY','ANXIETY', 'normChangeBehav')
+
+
+# create median splits
+ANXWORY.means$Anxiety <- factor(ntile(ANXWORY.means$ANXIETY, 2))
+ANXWORY.means$ChronicWorries <- factor(ntile(ANXWORY.means$TICS_WORY, 2))
+
+MC <- gather(ANXWORY.means, scale, level, Anxiety, ChronicWorries, factor_key=TRUE)
+
+# rename variables for plot
+MC$level    <- dplyr::recode(MC$level, "1" = "Lower Level", "2" = "Higher Level" )
+MC$group    <- dplyr::recode(MC$group, "1-day" = "Moderate", "3-day" = "Extensive" )
+
+
+pp <- ggplot(MC, aes(x = group, y = normChangeBehav, fill = group, color = group)) +
+  geom_point(alpha = .2, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
+  stat_summary(fun = mean, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75, size = 1, linetype = "solid") +
+  geom_violin(aes(x = group, y = normChangeBehav, fill = group, color = group), alpha = 0.1 ,width=0.5, size=0.2)+
+  ylab('Behavioral adaptation index')+
+  xlab('Amount of Training')+
+  facet_grid(scale~factor(level,levels=c("Lower Level","Higher Level")))+
+  scale_fill_manual(values=c("#56B4E9", "#0F2080")) +
+  scale_color_manual(values=c("#56B4E9", "#092C48")) +
+  theme_bw()
+
+
+ppp <- pp + theme_bw(base_size = 20, base_family = "Helvetica")+
+  theme(strip.text.x = element_text(size = 18, face = "bold"),
+        strip.background = element_rect(color="white", fill="white", linetype="solid"),
+        legend.position="none",
+        legend.text  = element_blank(),
+        #panel.grid.major = element_blank(),
+        #panel.grid.minor = element_blank(),
+        axis.title.x = element_text(size = 22),
+        axis.title.y = element_text(size = 22))
+
+pdf(file.path(figures_path,'Figure_S2_Anxiety_Worries.pdf'))
+print(ppp)
+dev.off()
+
+
+
+
+
+#-----------------------------------------------------------------------------
+#          SUPPLEMENTARY OUTCOME DEVALUATION CHANGES DISTRUBUTIONS LITTERATURE
+#-----------------------------------------------------------------------------
+
+# ------------------------- COMPAIRE DISTRIBUTIONS WITH OTHER STUDIES -------
+
+
+DEWIT <- ddply(DEWIT, .(subj), transform, normChangeBehav  = (normPressFreq[prepost=="post" & cue=='Valued'] - normPressFreq[prepost=="pre" & cue=='Valued']) - (normPressFreq[prepost=="post" & cue=='Devalued'] - normPressFreq[prepost=="pre" & cue=='Devalued']))
+TRICOMI <- ddply(TRICOMI, .(ID), transform, normChangeBehav  = (mean(normPressFreq[prepost=="post" & cue=='Valued']) - normPressFreq[prepost=="pre" & cue=='Valued']) - (mean(normPressFreq[prepost=="post" & cue=='Devalued']) - normPressFreq[prepost=="pre" & cue=='Devalued']))
+CECELI <- ddply(CECELI, .(ID), transform, normChangeBehav  = (normPressFreq[prepost=="post" & cue=='Valued'] - normPressFreq[prepost=="pre" & cue=='Valued']) - (normPressFreq[prepost=="post" & cue=='Devalued'] - normPressFreq[prepost=="pre" & cue=='Devalued']))
+
+
+# merge all datasets with the effect of interest
+CHANGE.mean <- ddply(CHANGE, .(ID,group,cue,prepost), summarise, normChangeBehav= mean((normChangeBehav))) # we need the mean not to increase the N artifically
+CHANGE.mean <- subset(CHANGE.mean, prepost == 'pre') # we need to subset not to have doubles
+CHANGE.mean <- subset(CHANGE.mean, cue == 'Valued') # we need to subset not to have doubles
+CHANGE.mean$ID <- 1:length(CHANGE.mean$ID) # let's change the id to avoid overlapping with others datasets
+CHANGE.mean$study <- factor(c("ICHB Study"))
+
+DEWIT.v <- subset(DEWIT, prepost == 'pre')
+DEWIT.v <- subset(DEWIT.v, cue == 'Valued') # we need to subset not to have doubles
+DEWIT.v$ID <- 1:length(DEWIT.v$subj)+1000 # let's change the id to avoid overlapping with others datasets
+DEWIT.v$site <- factor(c("DeWit et al., 2018"))
+DEWIT.v$study <- factor(c("DeWit et al., 2018"))
+
+TRICOMI.v <- subset(TRICOMI, prepost == 'pre')
+TRICOMI.v <- subset(TRICOMI.v, cue == 'Valued')
+TRICOMI.v$ID <- 1:length(TRICOMI.v$ID)+2000 # let's change the id to avoid overlapping with others datasets
+TRICOMI.v$study <- factor(c("Tricomi et al., 2009"))
+
+CECELI.mean <- ddply(CECELI, .(ID,group,cue,prepost), summarise, normChangeBehav= mean((normChangeBehav))) # we need the mean not to increase the N artifically
+CECELI.mean <- subset(CECELI.mean, prepost == 'pre') # we need to subset not to have doubles
+CECELI.mean <- subset(CECELI.mean, cue == 'Valued') # we need to subset not to have doubles
+CECELI.mean$ID <- 1:length(CECELI.mean$ID)+3000 # let's change the id to avoid overlapping with others datasets
+CECELI.mean$study <- factor(c("Ceceli et al., in prep"))
+
+
+V <- join(CHANGE.mean,DEWIT.v, type = 'full')
+V <- join(V,TRICOMI.v, type = 'full')
+V <- join(V,CECELI.mean, type = 'full')
+
+
+pp = ggplot(data = V, aes (x = study, y = normChangeBehav, fill = study)) +
+  geom_point(aes(color = study),position = position_jitterdodge(jitter.width = .5, jitter.height = 0))+
+  geom_violin(aes(color = study, fill = study),alpha = .3, size = .5)+ 
+  theme_bw() +
+  coord_flip()+
+  facet_grid(group~., scales = "free" )+
+  labs(
+    title = '',
+    x = 'Experiment site',
+    y = "Normalized Change in Behavior"
+  ) 
+
+
+
+
+
 
 
 

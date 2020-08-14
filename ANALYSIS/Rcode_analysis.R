@@ -32,6 +32,7 @@ library(rmcorr)
 library(flexmix)
 library(psych)
 library(emmeans)
+library(devtools)
 
 #---------------------------------------------------------------------------
 #                    PRELIMINARY STUFF 
@@ -52,6 +53,9 @@ source (file.path(utilities_path, 'makeIndividualDiffPlot.R'))
 source (file.path(utilities_path, 'makeSplitGroupPlot.R'))
 source (file.path(utilities_path, 'countTrialxCondition.R'))
 
+# get tool
+devtools::source_gist("2a1bb0133ff568cbe28d", 
+                      filename = "geom_flat_violin.R")
 
 # get database
 FULL <- read.delim(file.path(home_path,'DATA/FULL_DATABASE.txt'), header = T, sep ='') # read in dataset
@@ -1173,6 +1177,7 @@ dev.off()
 
 
 
+
 #---------------------------------------------------------------------------
 #                       INDIVIDUAL DIFFERENCES 
 #---------------------------------------------------------------------------
@@ -1338,10 +1343,9 @@ AFF.means$group           <- dplyr::recode(AFF.means$group, "1-day" = "Moderate"
 
 
 pp <- ggplot(AFF.means, aes(x = group, y = normChangeBehav, fill = group, color = group)) +
-  #geom_boxplot(alpha=0.3, outlier.alpha = 0) + # do not display outlyers or they will overlap with individual datapoint
-  geom_point(alpha = .5, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
-  stat_summary(fun = mean, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75, size = 1, linetype = "solid") +
-  geom_violin(aes(x = group, y = normChangeBehav, fill = group, color = group), alpha = 0.1 ,width=0.5, size=0.2)+
+  geom_flat_violin(scale = "count", trim = FALSE, alpha = .1, aes(x = group, y = normChangeBehav, fill = factor(group, levels = c("Moderate","Extensive" ))), color = NA)+
+  geom_point(alpha = .3, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
+  stat_summary(fun.data = mean_se, geom = "crossbar",width = 0.85 , alpha = 0.1) +
   ylab('Behavioral adaptation index')+
   xlab('Amount of Training')+
   facet_grid(~StressAffect)+
@@ -1354,8 +1358,6 @@ ppp <- pp + theme_bw(base_size = 20, base_family = "Helvetica")+
         strip.background = element_rect(color="white", fill="white", linetype="solid"),
         legend.position="none",
         legend.text  = element_blank(),
-        #panel.grid.major = element_blank(),
-        #panel.grid.minor = element_blank(),
         axis.title.x = element_text(size = 22),
         axis.title.y = element_text(size = 22))
 
@@ -1373,7 +1375,6 @@ dev.off()
 # non collinar factor for ancova-like approach
 
 #------------------------ DATA REDUCTION TO EXTRACT ORTHOGONAL FACTORS ------
-
 
 
 # prepare database for the FA
@@ -1491,9 +1492,9 @@ AFF.means$group           <- dplyr::recode(AFF.means$group, "1-day" = "Moderate"
 
 
 pp <- ggplot(AFF.means, aes(x = group, y = normChangeBehav, fill = group, color = group)) +
-  geom_point(alpha = .5, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
-  stat_summary(fun = mean, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75, size = 1, linetype = "solid") +
-  geom_violin(aes(x = group, y = normChangeBehav, fill = group, color = group), alpha = 0.1 ,width=0.5, size=0.2)+
+  geom_flat_violin(scale = "count", trim = FALSE, alpha = .1, aes(x = group, y = normChangeBehav, fill = factor(group, levels = c("Moderate","Extensive" ))), color = NA)+
+  geom_point(alpha = .3, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
+  stat_summary(fun.data = mean_se, geom = "crossbar",width = 0.85 , alpha = 0.1) +
   ylab('Behavioral adaptation index')+
   xlab('Amount of Training')+
   facet_grid(~StressAffect)+
@@ -1671,9 +1672,9 @@ MC$group    <- dplyr::recode(MC$group, "1-day" = "Moderate", "3-day" = "Extensiv
 
 
 pp <- ggplot(MC, aes(x = group, y = normChangeBehav, fill = group, color = group)) +
-  geom_point(alpha = .2, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
-  stat_summary(fun = mean, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75, size = 1, linetype = "solid") +
-  geom_violin(aes(x = group, y = normChangeBehav, fill = group, color = group), alpha = 0.1 ,width=0.5, size=0.2)+
+  geom_flat_violin(scale = "count", trim = FALSE, alpha = .1, aes(x = group, y = normChangeBehav, fill = factor(group, levels = c("Moderate","Extensive" ))), color = NA)+
+  geom_point(alpha = .3, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
+  stat_summary(fun.data = mean_se, geom = "crossbar",width = 0.85 , alpha = 0.1) +
   ylab('Behavioral adaptation index')+
   xlab('Amount of Training')+
   facet_grid(scale~factor(level,levels=c("Lower Level","Higher Level")))+
@@ -1689,12 +1690,15 @@ ppp <- pp + theme_bw(base_size = 20, base_family = "Helvetica")+
         legend.text  = element_blank(),
         #panel.grid.major = element_blank(),
         #panel.grid.minor = element_blank(),
-        axis.title.x = element_text(size = 22),
-        axis.title.y = element_text(size = 22))
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16))
 
-pdf(file.path(figures_path,'Figure_S2_Anxiety_Worries.pdf'))
+pdf(file.path(figures_path,'Figure_S2_Anxiety_Worries.pdf'),width=7,height=8)
 print(ppp)
 dev.off()
+
+
+
 
 
 

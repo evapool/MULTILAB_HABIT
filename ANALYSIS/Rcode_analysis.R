@@ -8,16 +8,16 @@
 #                    International consortium for the study of habits                              #
 #                                                                                                  #
 #                                                                                                  #
-# Started  by Eva on NOVEMBER 2018                                                                 #
-# Verified by Rani Gera on DECEMBER 2018                                                           #
-# Modified by Eva on JULY 2020                                                                     #
-# Verified by XX on                                                                                #
+# Created by E.R.P. on NOVEMBER 2018                                                               #
+# Verified by R.G on DECEMBER 2018                                                                 #
+# Modified by E.R.P on JULY 2020                                                                   #
+# Verified by R.G  on August 2020                                                                  #
 ####################################################################################################
 
 
 library(car)
-library(doBy)
 library(afex)
+library(doBy)
 library(lme4)
 library(lmerTest)
 library(ggplot2)
@@ -107,6 +107,7 @@ C.TELAVIV = subset(CHANGE, site == 'Tel_Aviv')
 
 
 
+
 #---------------------------------------------------------------------------
 #                   MANIPULACTION CHECKS 
 #---------------------------------------------------------------------------
@@ -117,10 +118,7 @@ colnames(HUNGER.means) <- c('ID','group','prepost','site','hunger')
 HUNGER.means = subset(HUNGER.means, !ID == "115") # the recording of the  hunger rating  for this participant was done on the wrong scale
 
 #--------- pasadena 1
-# descriptive
-hunger.c1.desc = summaryBy(hunger ~ prepost, data =  subset(HUNGER.means, site == 'Caltech1'),
-                                          FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-#stats
+# main
 hunger.c1.stat <- aov_car(hunger ~ group*prepost + Error (ID/prepost), data = subset(HUNGER.means, site == 'Caltech1'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
@@ -132,16 +130,11 @@ eta_sq(fit, partial = TRUE, ci.lvl = .9)
 hunger.c1.BF <- anovaBF(hunger ~ group*prepost  + ID, data = subset(HUNGER.means, site == 'Caltech1'), 
                       whichRandom = "ID", iterations = 50000)
 hunger.c1.BF <- recompute(hunger.c1.BF, iterations = 50000)
-
 hunger.c1.BF[2]# main prepost
-hunger.c1.BF[4]/hunger.c1.BF[3]# interaction with group 
+
 
 #--------- pasadena 2
-# descriptive
-hunger.c2.desc = summaryBy(hunger ~ prepost, data =  subset(HUNGER.means, site == 'Caltech2'),
-                           FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-
-#stats
+# main
 hunger.c2.stat <- aov_car(hunger ~ group*prepost + Error (ID/prepost), data = subset(HUNGER.means, site == 'Caltech2'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
@@ -153,16 +146,12 @@ eta_sq(fit, partial = TRUE, ci.lvl = .9)
 hunger.c2.BF <- anovaBF(hunger ~ group*prepost  + ID, data = subset(HUNGER.means, site == 'Caltech2'), 
                         whichRandom = "ID", iterations = 50000)
 hunger.c2.BF <- recompute(hunger.c2.BF, iterations = 50000)
-
 hunger.c2.BF[2] # main prepost
-hunger.c2.BF[4]/hunger.c2.BF[3]# interaction with gorup
+
 
 #--------- hamburg
-# descriptive
-hunger.h.desc = summaryBy(hunger ~ prepost, data =  subset(HUNGER.means, site == 'Hamburg'),
-                           FUN = function(x) { c(m = mean(x), s = sd(x)) } )
 
-#stats
+#main
 hunger.h.stat <- aov_car(hunger ~ group*prepost + Error (ID/prepost), data = subset(HUNGER.means, site == 'Hamburg'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
@@ -174,17 +163,12 @@ eta_sq(fit, partial = TRUE, ci.lvl = .9)
 hunger.h.BF <- anovaBF(hunger ~ group*prepost  + ID, data = subset(HUNGER.means, site == 'Hamburg'), 
                         whichRandom = "ID", iterations = 50000)
 hunger.h.BF <- recompute(hunger.h.BF, iterations = 50000)
-
 hunger.h.BF[2] # main prepost
-hunger.h.BF[4]/hunger.h.BF[3]# interaction with gorup
+
 
 
 #--------- sydney
-# descriptive
-hunger.s.desc = summaryBy(hunger ~ prepost, data =  subset(HUNGER.means, site == 'Sydney'),
-                          FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-
-#stats
+#main
 hunger.s.stat <- aov_car(hunger ~ group*prepost + Error (ID/prepost), data = subset(HUNGER.means, site == 'Sydney'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
@@ -196,18 +180,12 @@ eta_sq(fit, partial = TRUE, ci.lvl = .9)
 hunger.s.BF <- anovaBF(hunger ~ group*prepost  + ID, data = subset(HUNGER.means, site == 'Sydney'), 
                        whichRandom = "ID", iterations = 50000)
 hunger.s.BF <- recompute(hunger.s.BF, iterations = 50000)
-
 hunger.s.BF[2] # main prepost
-hunger.s.BF[4]/hunger.s.BF[3] # interaction with gorup
 
 
 
 #--------- tel-aviv
-# descriptive
-hunger.t.desc = summaryBy(hunger ~ prepost, data =  subset(HUNGER.means, site == 'Tel_Aviv'),
-                          FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-
-#stats
+#main
 hunger.t.stat <- aov_car(hunger ~ group*prepost + Error (ID/prepost), data = subset(HUNGER.means, site == 'Tel_Aviv'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
@@ -219,9 +197,7 @@ eta_sq(fit, partial = TRUE, ci.lvl = .9)
 hunger.t.BF <- anovaBF(hunger ~ group*prepost  + ID, data = subset(HUNGER.means, site == 'Tel_Aviv'), 
                        whichRandom = "ID", iterations = 50000)
 hunger.t.BF <- recompute(hunger.t.BF, iterations = 50000)
-
 hunger.t.BF[2] # main prepost
-hunger.t.BF[4]/hunger.t.BF[3] # interaction with gorup
 
 
 #----------------------------- SNACK PLEASANTNESS-------------------------------------
@@ -234,10 +210,7 @@ SNACK.index <- subset(SNACK.index, cue!='Devalued')
 
 
 #--------- pasadena 1
-# descriptive
-snack.c1.desc = summaryBy(outcomeliking ~ prepost, data =  subset(SNACK.index, site == 'Caltech1'),
-                           FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-#stats
+#main
 snack.c1.stat <- aov_car(outcomeliking ~ group*prepost + Error (ID/prepost), data = subset(SNACK.index, site == 'Caltech1'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
@@ -251,14 +224,9 @@ snack.c1.BF <- anovaBF(outcomeliking ~ group*prepost  + ID, data = subset(SNACK.
 snack.c1.BF <- recompute(snack.c1.BF, iterations = 50000)
 
 snack.c1.BF[1]# main prepost
-snack.c1.BF[4]/snack.c1.BF[3]# interaction with group
-
 
 #--------- pasadena 2
-# descriptive
-snack.c2.desc = summaryBy(outcomeliking ~ prepost, data =  subset(SNACK.index, site == 'Caltech2'),
-                          FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-#stats
+#main
 snack.c2.stat <- aov_car(outcomeliking ~ group*prepost + Error (ID/prepost), data = subset(SNACK.index, site == 'Caltech2'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
@@ -270,9 +238,8 @@ eta_sq(fit, partial = TRUE, ci.lvl = .9)
 snack.c2.BF <- anovaBF(outcomeliking ~ group*prepost  + ID, data = subset(SNACK.index, site == 'Caltech2'), 
                        whichRandom = "ID", iterations = 50000)
 snack.c2.BF <- recompute(snack.c2.BF, iterations = 50000)
-
 snack.c2.BF[1]# main prepost
-snack.c2.BF[4]/snack.c2.BF[3]# interaction with group
+
 
 
 #--------- hamburg
@@ -291,15 +258,11 @@ eta_sq(fit, partial = TRUE, ci.lvl = .9)
 snack.h.BF <- anovaBF(outcomeliking ~ group*prepost  + ID, data = subset(SNACK.index, site == 'Hamburg'), 
                        whichRandom = "ID", iterations = 50000)
 snack.h.BF <- recompute(snack.h.BF, iterations = 50000)
-
 snack.h.BF[1]# main prepost
-snack.h.BF[4]/snack.h.BF[3]# interaction with group
+
 
 #--------- sydeny
-# descriptive
-snack.s.desc = summaryBy(outcomeliking ~ prepost, data =  subset(SNACK.index, site == 'Sydney'),
-                         FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-#stats
+#main
 snack.s.stat <- aov_car(outcomeliking ~ group*prepost + Error (ID/prepost), data = subset(SNACK.index, site == 'Sydney'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
@@ -311,17 +274,12 @@ eta_sq(fit, partial = TRUE, ci.lvl = .9)
 snack.s.BF <- anovaBF(outcomeliking ~ group*prepost  + ID, data = subset(SNACK.index, site == 'Sydney'), 
                       whichRandom = "ID", iterations = 50000)
 snack.s.BF <- recompute(snack.s.BF, iterations = 50000)
-
-# main prepost
 snack.s.BF[1]
-snack.s.BF[4]/snack.s.BF[3]# interaction with group
+
 
 
 #--------- sydeny
-# descriptive
-snack.t.desc = summaryBy(outcomeliking ~ prepost, data =  subset(SNACK.index, site == 'Tel_Aviv'),
-                         FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-#stats
+#main
 snack.t.stat <- aov_car(outcomeliking ~ group*prepost + Error (ID/prepost), data = subset(SNACK.index, site == 'Tel_Aviv'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
@@ -333,211 +291,7 @@ eta_sq(fit, partial = TRUE, ci.lvl = .9)
 snack.t.BF <- anovaBF(outcomeliking ~ group*prepost  + ID, data = subset(SNACK.index, site == 'Tel_Aviv'), 
                       whichRandom = "ID", iterations = 50000)
 snack.t.BF <- recompute(snack.t.BF, iterations = 50000)
-
-# main prepost
-snack.t.BF[1]
-snack.t.BF[4]/snack.t.BF[3]# interaction with group
-
-
-
-############################################### outcome devaluation induced changes
-
-# ------------------------  CALTECH1
-C.CALTECH = subset(CHANGE, site == 'Caltech1')
-CALTECH.index <- getChangeIndex(C.CALTECH)# aggregate based on pre-post
-
-int.caltech = ezANOVA(CALTECH.index, dv = pressFreq, wid = ID, within = .(cue), between = group, type = 3, detailed = T, return_aov = T) # quick check because aov uses a type 1 anova
-summary(aov(normPressFreq ~ group*cue*prepost + Error (ID/cue*prepost), data = C.CALTECH))
-
-int.caltech1 = lmer(normPressFreq ~ group*cue*prepost+STAIT_total + (cue*prepost|ID), data = C.CALTECH, REML=FALSE)
-
-# ------------------------  CALTECH2
-C.CALTECH2 = subset(CHANGE, site == 'Caltech2')
-CALTECH2.index <- getChangeIndex(C.CALTECH2)# aggregate based on pre-post
-
-int.caltech2 = ezANOVA(CALTECH2.index, dv = pressFreq, wid = ID, within = .(cue), between = group, type = 3, detailed = T, return_aov = T) # quick check because aov uses a type 1 anova
-summary(aov(normPressFreq ~ group*cue*prepost + Error (ID/cue*prepost), data = C.CALTECH2))
-
-int.caltech2 = lmer(normPressFreq ~ group*cue*prepost+STAIT_total + (cue*prepost|ID), data = C.CALTECH2, REML=FALSE)
-
-
-# ------------------------  HAMBURG
-C.HAMBURG = subset(CHANGE, site == 'Hamburg')
-HAMBURG.index <- getChangeIndex(C.HAMBURG)# aggregate based on pre-post
-
-int.hamburg = ezANOVA(HAMBURG.index, dv = pressFreq, wid = ID, within = .(cue), between = group, type = 3, detailed = T, return_aov = T) # quick check because aov uses a type 1 anova
-summary(aov(normPressFreq ~ group*cue*prepost + Error (ID/cue*prepost), data = C.HAMBURG))
-
-int.hamburg = lmer(normPressFreq ~ group*cue*prepost+STAIS_total + (cue*prepost|ID), data = C.HAMBURG, REML=FALSE)
-
-# ------------------------  SYDNEY
-C.SYDNEY = subset(CHANGE, site == 'Sydney')
-SYDNEY.index <- getChangeIndex(C.SYDNEY)# aggregate based on pre-post
-
-int.sydeny = ezANOVA(SYDNEY.index, dv = pressFreq, wid = ID, within = .(cue), between = group, type = 3, detailed = T, return_aov = T) # quick check because aov uses a type 1 anova
-summary(aov(normPressFreq ~ group*cue*prepost + Error (ID/cue*prepost), data = C.SYDNEY))
-
-
-# ------------------------  TELAVIV
-C.TELAVIV = subset(CHANGE, site == 'Tel_Aviv')
-TELAVIV.index <- getChangeIndex(C.TELAVIV)# aggregate based on pre-post
-
-int.telaviv = ezANOVA(TELAVIV.index, dv = pressFreq, wid = ID, within = .(cue), between = group, type = 3, detailed = T, return_aov = T) # quick check because aov uses a type 1 anova
-summary(aov(normPressFreq ~ group*cue*prepost + Error (ID/cue*prepost), data = C.TELAVIV))
-
-int.telaviv = lmer(normPressFreq ~ group*cue*prepost+STAIS_total + (cue*prepost|ID), data = C.TELAVIV, REML=FALSE)
-
-# --------------------- FIGURE 1 (AND META-ANALYSIS)
-CALTECH.index2 <- ddply(CALTECH.index, .(ID), transform, pressFreq = pressFreq-pressFreq[cue=="Devalued"])
-CALTECH.index2 <- subset(CALTECH.index2, cue!='Devalued')
-
-CALTECH2.index2 <- ddply(CALTECH2.index, .(ID), transform, pressFreq = pressFreq-pressFreq[cue=="Devalued"])
-CALTECH2.index2 <- subset(CALTECH2.index2, cue!='Devalued')
-
-HAMBURG.index2 <- ddply(HAMBURG.index, .(ID), transform, pressFreq = pressFreq-pressFreq[cue=="Devalued"])
-HAMBURG.index2 <- subset(HAMBURG.index2, cue!='Devalued')
-
-SYDNEY.index2 <- ddply(SYDNEY.index, .(ID), transform, pressFreq = pressFreq-pressFreq[cue=="Devalued"])
-SYDNEY.index2 <- subset(SYDNEY.index2, cue!='Devalued')
-
-TELAVIV.index2 <- ddply(TELAVIV.index, .(ID), transform, pressFreq = pressFreq-pressFreq[cue=="Devalued"])
-TELAVIV.index2 <- subset(TELAVIV.index2, cue!='Devalued')
-
-# get the mean and the std
-estimate.caltech = summaryBy(pressFreq ~ group, data = CALTECH.index2,
-                             FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-
-estimate.hamburg = summaryBy(pressFreq ~ group, data = HAMBURG.index2,
-                             FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-
-estimate.caltech2 = summaryBy(pressFreq ~ group, data = CALTECH2.index2,
-                              FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-
-estimate.sydney  = summaryBy(pressFreq ~ group, data = SYDNEY.index2,
-                             FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-
-estimate.telaviv  = summaryBy(pressFreq ~ group, data = TELAVIV.index2,
-                              FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-
-# build database for meta-analysis
-site           = c ("Pasadena1 (2017-Sept) "                      , "Hamburg (2018-Jan)"                           ,"Pasadena2 (2018-May)"                          ,"Sydeny (2018-May)"                             ,"Tel-Aviv (2018-June)")
-year           = c ("2017-sept"                                   , "2018-jan"                                     ,"2018-may"                                      ,"2018-may"                                      , "2018-june")
-food_cons      = c ("bysession"                                   , "byrun"                                        , "byrun"                                        ,"byrun"                                         , "byrun")
-
-mean_moderate  = c (estimate.caltech$pressFreq.m[1]               , estimate.hamburg$pressFreq.m[1]                , estimate.caltech2$pressFreq.m[1]                , estimate.sydney$pressFreq.m[1]                , estimate.telaviv$pressFreq.m[1]) # mean difference prepost for moderate training
-mean_extensive = c (estimate.caltech$pressFreq.m[2]               , estimate.hamburg$pressFreq.m[2]                , estimate.caltech2$pressFreq.m[2]                , estimate.sydney$pressFreq.m[2]                , estimate.telaviv$pressFreq.m[2]) # mean difference prepost for extinsive trainig
-std_moderate   = c (estimate.caltech$pressFreq.s[1]               , estimate.hamburg$pressFreq.s[1]                , estimate.caltech2$pressFreq.s[1]                , estimate.sydney$pressFreq.s[1]                , estimate.telaviv$pressFreq.s[1])
-std_extensive  = c (estimate.caltech$pressFreq.s[2]               , estimate.hamburg$pressFreq.s[2]                , estimate.caltech2$pressFreq.s[2]                , estimate.sydney$pressFreq.s[2]                , estimate.telaviv$pressFreq.s[2])
-n_moderate     = c (length(which(CALTECH.index2$group == '1-day')), length(which(HAMBURG.index2$group == '1-day')) , length(which(CALTECH2.index2$group == '1-day')) , length(which(SYDNEY.index2$group == '1-day')) , length(which(TELAVIV.index2$group == '1-day')))
-n_extensive    = c (length(which(CALTECH.index2$group == '3-day')), length(which(HAMBURG.index2$group == '3-day')) , length(which(CALTECH2.index2$group == '3-day')) , length(which(SYDNEY.index2$group == '3-day')) , length(which(TELAVIV.index2$group == '3-day')))
-
-metadata = data.frame( site, year, food_cons, mean_moderate, mean_extensive, std_moderate, std_extensive, n_moderate, n_extensive)
-
-# compute effect sizes
-meta.data <- escalc(measure="SMD", m1i=mean_moderate, sd1i=std_moderate, n1i=n_moderate,
-                    m2i=mean_extensive, sd2i=std_extensive, n2i=n_extensive, data=metadata)
-
-# compute random-effect model
-res <- rma.mv(yi, vi, random = ~ 1 | site, data=meta.data)
-
-# plot
-par(mar=c(4,4,1,2)) # decrease margins so the full space is used
-par(cex=1, font=1)### switch to bold font
-forest.plot <-forest(res,slab = (meta.data$site),xlim=c(-3,2),
-                     ilab = cbind(meta.data$n_extensive, meta.data$n_moderate),
-                     ilab.xpos=c(-1.3,-0.9), cex=1,
-                     order=order(meta.data$site))
-
-
-# add column headings to the plot
-par(cex=1, font=4)### switch to bold font
-text(-3, 6.2, "STUDY",  pos=4)
-text( 2, 6.2, "SMD [95% CI]", pos=2)
-par(cex=1, font=3)### switch to bold font
-text(c(-1.35,-0.8), 6.2, c("N: day1 ", "N: day3 "))
-
-
-# save the plot in the figures folder
-dev.print(pdf, file.path(figures_path,'S_Figure_forest.pdf'))
-dev.off()
-
-
-# ---------------------  LINEAR MIXED MODEL
-change.inter = lmer(normPressFreq ~ group*cue*prepost + site + itemxcondition + (cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
-change.simple = lmer(normPressFreq ~ (group+cue+prepost)^2 + site + itemxcondition + (cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
-
-anova(change.inter, change.simple)
-
-# check 1 there is no difference before and that there is a difference after devaluation
-PRE  <- subset(CHANGE, prepost == 'pre')
-POST <- subset(CHANGE, prepost == 'post')
-
-pre.check = lmer (normPressFreq ~ group * cue + site + itemxcondition + (cue+itemxcondition|ID), data = PRE)
-anova(pre.check)
-
-post.check =  lmer (normPressFreq ~ group * cue + site + itemxcondition + (cue+itemxcondition|ID), data = POST)
-anova(post.check)
-
-# check 2 learning trajectory in pre session since there is a strong effect of itemxcondition in PRE
-bg_b = ddply(PRE,.(itemxcondition,group,cue),summarise,normPressFreq=mean(normPressFreq))
-
-ggplot(bg_b, aes(itemxcondition, fill = cue, color = cue)) +
-  geom_point(aes(y=normPressFreq),alpha=0.9)+
-  geom_line(aes(y=normPressFreq),alpha=0.9)+
-  facet_grid(~group)+
-  theme_bw()+
-  ylim (0,1)+
-  labs(
-    title = '',
-    x = 'Trial',
-    y = "Normalised pressing"
-  )
-
-# ----- assumptions check
-plot(fitted(change.inter),residuals(change.inter)) # note heteroscedastisity and the impact of the 0 values
-qqnorm(residuals(change.inter))
-hist(residuals(change.inter))
-
-# ---------------------- FIGURE 2
-# plot distribution of effect of interest to see how the 0 responses affected our tageted effect:
-bg_b = ddply(CHANGE,.(ID,group),summarise,normChangeBehav=mean(normChangeBehav))
-
-behav =data.frame(bg_b$normChangeBehav)
-behav$group = bg_b$group
-behav$typeMeasure <- 'changeBehavior'
-colnames(behav) [1] <- "Normscore"
-
-
-pp <- ggplot(behav, aes(Normscore, fill = group)) +
-  geom_histogram(aes(y=..density..),alpha=0.3,binwidth=0.2)+
-  geom_density(alpha = 0.1)+
-  facet_grid(~group)+
-  theme_bw()+
-  labs(
-    title = '',
-    x = 'Normalized Change in Behavior',
-    y = "Density"
-  )
-
-ppp <-  pp + theme_linedraw(base_size = 14, base_family = "Helvetica")+
-  theme(strip.text.x = element_text(size = 18, face = "bold"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        legend.justification = c(1,1), legend.position = "right",
-        legend.text = element_text(size = 14),
-        axis.ticks.x=element_blank(),
-        axis.title.x = element_text(size = 18, face = "bold"),
-        axis.title.y = element_text(size = 18, face = "bold"))
-
-pdf(file.path(figures_path,'Figure_histograms.pdf'))
-print(ppp)
-dev.off()
-
-
-
-
- 
-
+snack.t.BF[1]# main prepost
 
 
 #----------------------------- FIGURE -------------------------
@@ -578,9 +332,12 @@ dev.off()
 
 
 
+
+
 #---------------------------------------------------------------------------
 #                  OUTCOME DEVALUATION CHANGES BY SITE
 #---------------------------------------------------------------------------
+
 
 # ---------------------------- PASADENA 1 ----------------------------------
 
@@ -593,7 +350,6 @@ int.c1.stat <- aov_car(pressFreq ~ group*cue + Error (ID/cue), data = CALTECH.in
 
 # effect sizes (90%CI)
 fit <- (aov(pressFreq ~ group*cue + Error (ID/cue), data= CALTECH.index))
-anova_stats(fit$`ID:cue`)
 eta_sq(fit, partial = TRUE, ci.lvl = .9)
 
 # Bayes factors
@@ -613,7 +369,6 @@ int.c2.stat <- aov_car(pressFreq ~ group*cue + Error (ID/cue), data = CALTECH2.i
 
 # effect sizes (90%CI)
 fit <- (aov(pressFreq ~ group*cue + Error (ID/cue), data= CALTECH2.index))
-anova_stats(fit$`ID:cue`)
 eta_sq(fit, partial = TRUE, ci.lvl = .9)
 
 # Bayes factors
@@ -633,7 +388,6 @@ int.h.stat <- aov_car(pressFreq ~ group*cue + Error (ID/cue), data = HAMBURG.ind
 
 # effect sizes (90%CI)
 fit <- (aov(pressFreq ~ group*cue + Error (ID/cue), data= HAMBURG.index))
-anova_stats(fit$`ID:cue`)
 eta_sq(fit, partial = TRUE, ci.lvl = .9)
 
 # Bayes factors
@@ -653,17 +407,13 @@ int.s.stat <- aov_car(pressFreq ~ group*cue + Error (ID/cue), data = SYDNEY.inde
 
 # effect sizes (90%CI)
 fit <- (aov(pressFreq ~ group*cue + Error (ID/cue), data= SYDNEY.index))
-anova_stats(fit$`ID:cue`)
 eta_sq(fit, partial = TRUE, ci.lvl = .9)
 
 # Bayes factors
 int.s.BF <- anovaBF(pressFreq ~ group*cue  + ID, data = SYDNEY.index, 
                     whichRandom = "ID", iterations = 50000)
 int.s.BF <- recompute(int.s.BF, iterations = 50000)
-int.s.BF <- recompute(int.s.BF, iterations = 50000)
 int.s.BF[4]/int.s.BF[3]# interaction with gorup
-
-
 
 
 # ---------------------------- TEL-AVIV  ----------------------------------
@@ -677,20 +427,13 @@ int.t.stat <- aov_car(pressFreq ~ group*cue + Error (ID/cue), data = TELAVIV.ind
 
 # effect sizes (90%CI)
 fit <- (aov(pressFreq ~ group*cue + Error (ID/cue), data= TELAVIV.index))
-anova_stats(fit$`ID:cue`)
 eta_sq(fit, partial = TRUE, ci.lvl = .9)
 
 # Bayes factors
 int.t.BF <- anovaBF(pressFreq ~ group*cue  + ID, data = TELAVIV.index, 
                     whichRandom = "ID", iterations = 50000)
 int.t.BF <- recompute(int.t.BF, iterations = 50000)
-int.t.BF <- recompute(int.t.BF, iterations = 50000)
 int.t.BF[4]/int.t.BF[3]
-
-
-
-
-
 
 
 
@@ -752,7 +495,7 @@ CECELI$group     <- factor(CECELI$group)
 myvars <- c("subj", "group", "endOfTrainingValued", "endOfTrainingDevalued", "extinctionValued", "extinctionDevalued")
 DEWIT_wide <- DEWIT_full[myvars]
 
-#convert into the long format
+# convert into the long format
 DEWIT <- gather(DEWIT_wide, prepostvaluedevalued, PressFreq, endOfTrainingValued:extinctionDevalued, factor_key=TRUE)
 DEWIT$prepost <- dplyr::recode(DEWIT$prepostvaluedevalued, "endOfTrainingValued" = "pre", "endOfTrainingDevalued" = "pre","extinctionValued" = "post", "extinctionDevalued" = "post" )
 DEWIT$cue     <- dplyr::recode(DEWIT$prepostvaluedevalued, "endOfTrainingValued" = "Valued", "extinctionValued" = "Valued","endOfTrainingDevalued" = "Devalued", "extinctionDevalued" = "Devalued" )
@@ -848,7 +591,6 @@ estimate.telaviv.day1  = summaryBy(metaBehav ~ cue, data = C.TELAVIV.day1,
                                    FUN = function(x) { c(m = mean(x), s = sd(x), n = length(x)) } )
 corr.telaviv.day1 = rmcorr(ID,metaBehav[cue == 'Valued'],metaBehav[cue == 'Devalued'],dataset = C.TELAVIV.day1)
 
-
 estimate.telaviv.day3  = summaryBy(metaBehav ~ cue, data = C.TELAVIV.day3,
                                    FUN = function(x) { c(m = mean(x), s = sd(x), n = length(x)) } )
 corr.telaviv.day3 = rmcorr(ID,metaBehav[cue == 'Valued'],metaBehav[cue == 'Devalued'],dataset = C.TELAVIV.day3)
@@ -867,7 +609,6 @@ estimate.dewit.day1  = summaryBy(metaBehav ~ cue, data = DEWIT.day1,
                                  FUN = function(x) { c(m = mean(x), s = sd(x), n = length(x)) } )
 corr.dewit.day1 = rmcorr(subj,metaBehav[cue == 'Valued'],metaBehav[cue == 'Devalued'],dataset = DEWIT.day1)
 
-
 estimate.dewit.day3  = summaryBy(metaBehav ~ cue, data = DEWIT.day3,
                                  FUN = function(x) { c(m = mean(x), s = sd(x), n = length(x)) } )
 corr.dewit.day3 = rmcorr(subj,metaBehav[cue == 'Valued'],metaBehav[cue == 'Devalued'],dataset = DEWIT.day3)
@@ -875,12 +616,11 @@ corr.dewit.day3 = rmcorr(subj,metaBehav[cue == 'Valued'],metaBehav[cue == 'Deval
 # Ceceli
 estimate.ceceli.day1  = summaryBy(metaBehav ~ cue, data = CECELI.day1,
                                  FUN = function(x) { c(m = mean(x), s = sd(x), n = length(x)) } )
-corr.ceceli.day1 = rmcorr(subj,metaBehav[cue == 'Valued'],metaBehav[cue == 'Devalued'],dataset = DEWIT.day1)
-
+corr.ceceli.day1 = rmcorr(ID,metaBehav[cue == 'Valued'],metaBehav[cue == 'Devalued'],dataset = CECELI.day1)
 
 estimate.ceceli.day3  = summaryBy(metaBehav ~ cue, data = CECELI.day3,
                                  FUN = function(x) { c(m = mean(x), s = sd(x), n = length(x)) } )
-corr.ceceli.day3 = rmcorr(subj,metaBehav[cue == 'Valued'],metaBehav[cue == 'Devalued'],dataset = DEWIT.day3)
+corr.ceceli.day3 = rmcorr(ID,metaBehav[cue == 'Valued'],metaBehav[cue == 'Devalued'],dataset = CECELI.day3)
 
 # build database for meta-analysis
 site           = c ("ICHB: Pasadena1: 1-day "               , 
@@ -983,7 +723,7 @@ std_devalued  = c (estimate.caltech.day1$metaBehav.s[1]       ,
                    estimate.tricomi.day1$metaBehav.s[1]         ,
                    estimate.tricomi.day3$metaBehav.s[1]         ,
                    estimate.ceceli.day1$metaBehav.s[1]         ,
-                   estimate.ceceli.day3$metaBehav.s[1]) # standard deviation  of the difference prepost for valued)
+                   estimate.ceceli.day3$metaBehav.s[1]) # standard deviation  of the difference prepost for devalued)
 
 std_valued  = c (estimate.caltech.day1$metaBehav.s[2]          , 
                  estimate.caltech.day3$metaBehav.s[2]         , 
@@ -1018,7 +758,7 @@ n_devalued  = c (estimate.caltech.day1$metaBehav.n[1]           ,
                  estimate.tricomi.day1$metaBehav.n[1]          ,
                  estimate.tricomi.day3$metaBehav.n[1]          ,
                  estimate.ceceli.day1$metaBehav.n[1]          ,
-                 estimate.ceceli.day3$metaBehav.n[1]) # standard deviation  of the difference prepost for valued)
+                 estimate.ceceli.day3$metaBehav.n[1]) # n participants  of the difference prepost for devalued)
 
 n_valued  = c (estimate.caltech.day1$metaBehav.n[2]           , 
                estimate.caltech.day3$metaBehav.n[2]         , 
@@ -1035,7 +775,7 @@ n_valued  = c (estimate.caltech.day1$metaBehav.n[2]           ,
                estimate.tricomi.day1$metaBehav.n[2]         ,
                estimate.tricomi.day3$metaBehav.n[2]         ,
                estimate.ceceli.day1$metaBehav.n[2]         ,
-               estimate.ceceli.day3$metaBehav.n[2]) # standard deviation  of the difference prepost for valued)
+               estimate.ceceli.day3$metaBehav.n[2]) # n participants of the difference prepost for valued)
 
 ri  = c (corr.caltech.day1$r         , 
          corr.caltech.day3$r         , 
@@ -1076,8 +816,10 @@ res.day3 <- rma.mv(yi, vi, subset=(training=="extensive-trainig"), data=meta.dat
 
 
 # --------------------------------------- plot
+
 par(mar=c(4,4,1,2)) # decrease margins so the full space is used
-par(cex=0.8, font=1)### switch to bold font
+par(cex=0.8, font = 2)### switch to bold font
+
 
 forest.plot <- forest(res.all,slab = (meta.data$site),xlim=c(-1.2,2),
                      ilab = cbind(meta.data$n_valued),
@@ -1087,11 +829,11 @@ forest.plot <- forest(res.all,slab = (meta.data$site),xlim=c(-1.2,2),
                      xlab="Mean Change", mlab="", psize=1)
 
 ### add summary polygons for the three subgroups
-addpoly(res.day1, row=15.5, cex=0.75, font=3, mlab="")
-addpoly(res.day3, row= 2.5, cex=0.75, font=3, mlab="")
+addpoly(res.day1, row=15.5, cex=0.75, mlab="")
+addpoly(res.day3, row= 2.5, cex=0.75,  mlab="")
 
-text(-1.2, 15.5, pos=4, cex=0.75, font=3,bquote(paste("RE Model for Moderate training")))
-text(-1.2, 2.5, pos=4, cex=0.75, font=3, bquote(paste("RE Model for Extensive training")))
+text(-1.2, 15.5, pos=4, cex=0.75, font=4, bquote(paste("RE Model for Moderate training")))
+text(-1.2, 2.5, pos=4, cex=0.75, font=4, bquote(paste("RE Model for Extensive training")))
                                             
 ### add text for the subgroups
 par(cex=0.8, font=4)
@@ -1106,6 +848,7 @@ text(-0.3, 26.5, c("N"))
 
 dev.print(pdf, file.path(figures_path,'Figure_forest.pdf'))
 dev.off()
+
 
 
 
@@ -1184,6 +927,7 @@ dev.off()
 
 
 
+
 #------------------------ DATA REDUCTION TO EXTRACT ORTHOGONAL FACTORS ------
 
 # prepare database for the FA
@@ -1205,7 +949,7 @@ pairs.panels(na.omit(Q_EFA.means))
 nFactor  <- fa.parallel(Q_EFA.means, fm = "ml")
 
 
-# apply PCA with varimax rotation
+# apply EFA with oblimin
 quest.1.efa <- fa(r = Q_EFA.means, nfactors = 4, rotate = "oblimin", fm = "ml")
 
 print(quest.1.efa$loadings,cutoff = 0.0)
@@ -1233,8 +977,7 @@ EFA_CHANGE <- join (CHANGE,dat, type = "full")
 # run full model for each factor individually
 
 # stress work
-inter.work = lmer(normPressFreq~ group*cue*prepost*ML1 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
-anova(inter.work)
+inter.work = lmer(normPressFreq~ group*cue*prepost*ML1 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE, control = lmerControl(optimizer ="bobyqa"))
 summary(inter.work)
 Confint(inter.work, level = 0.95) 
 
@@ -1244,8 +987,7 @@ qqnorm(residuals(inter.work))
 hist(residuals(inter.work))
 
 # stress social
-inter.social = lmer(normPressFreq~ group*cue*prepost*ML2 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
-anova(inter.social)
+inter.social = lmer(normPressFreq~ group*cue*prepost*ML2 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE, control = lmerControl(optimizer ="bobyqa"))
 summary(inter.social)
 Confint(inter.social, level = 0.95) 
 
@@ -1255,8 +997,7 @@ qqnorm(residuals(inter.social))
 hist(residuals(inter.social))
 
 # stress affect
-inter.affect = lmer(normPressFreq~ group*cue*prepost*ML3 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
-anova(inter.affect)
+inter.affect = lmer(normPressFreq~ group*cue*prepost*ML3 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE, control = lmerControl(optimizer ="bobyqa"))
 summary(inter.affect)
 Confint(inter.affect, level = 0.95) 
 
@@ -1266,8 +1007,7 @@ qqnorm(residuals(inter.affect))
 hist(residuals(inter.affect))
 
 # implusivity
-inter.implusivity = lmer(normPressFreq~ group*cue*prepost*ML4 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
-anova(inter.implusivity)
+inter.implusivity = lmer(normPressFreq~ group*cue*prepost*ML4 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE,control = lmerControl(optimizer ="bobyqa"))
 summary(inter.implusivity)
 Confint(inter.implusivity, level = 0.95) 
 
@@ -1278,32 +1018,24 @@ hist(residuals(inter.implusivity))
 
 # test and different points of the model to understand interaction
 
-# Stress affective -1 SD people low in axiety/stress have effect of overtraining
+# Stress affective -1 SD people low on affectiv stress have effect of overtraining
 EFA_CHANGE$AFF_pSD <- scale(EFA_CHANGE$ML3, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
-sslop.pSD = lmer(normPressFreq~ group*cue*prepost*AFF_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
-anova(sslop.pSD)
+sslop.pSD = lmer(normPressFreq~ group*cue*prepost*AFF_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE,control = lmerControl(optimizer ="bobyqa"))
 summary(sslop.pSD)
 Confint(sslop.pSD, level = 0.95) 
 
-# Social Isolation +1 SD people high in axiety/stress have effect of overtraining
+# Stress Affective +1 SD people high on affective stress have effect of overtraining
 EFA_CHANGE$AFF_mSD <- scale(EFA_CHANGE$ML3, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
-sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*AFF_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
-anova(sslop.mSD)
+sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*AFF_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE, control = lmerControl(optimizer ="bobyqa"))
 summary(sslop.mSD)
 Confint(sslop.mSD, level = 0.95) 
 
-# ----------------------------- PLOT EXPLORATORY MODEL ---------------------------
+#----------------------------- PLOT EXPLORATORY MODEL ---------------------------
 
 # this tests the model predictions as we do in lmer but does not allow to display distributions
 AFF.means <- aggregate(EFA_CHANGE$normChangeBehav, by = list(EFA_CHANGE$ID, EFA_CHANGE$group, EFA_CHANGE$site, EFA_CHANGE$AFF_pSD, EFA_CHANGE$AFF_mSD, EFA_CHANGE$ML3), FUN='mean', na.rm = T) # extract means
 colnames(AFF.means) <- c('ID','group','site', 'AFF_pSD', 'AFF_mSD','AFF', 'normChangeBehav')
 
-# ADJUSTED MEANS in case we want see the estimations from the model
-acqC1.aov      <- aov_car(normChangeBehav  ~ group*AFF +Error(ID), data = AFF.means, observed = c("AFF"), factorize = F, anova_table = list(es = "pes"))
-acqC1.adjmeans <- emmeans(acqC1.aov, specs = c("group"), by = "AFF", at = list(AFF= c(-1, 1)))
-acqC1.adjmeans
-
-# this is a median split which is not the model prediction but allows to plot distributions
 
 # figure for AFF: Streess Affect
 AFF.means$StressAffect<- ntile(AFF.means$AFF, 2)
@@ -1314,28 +1046,26 @@ lowAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = su
                           factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
 fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '1')))
-anova_stats(fit$`ID`)
 eta_sq(fit, partial = TRUE, ci.lvl = .9)
 
 
 # Bayes factors 
-lowAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means, StressAffect  == '1'), 
+lowAff.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means, StressAffect  == '1'), 
                      whichRandom = "ID", iterations = 50000)
-lowAnx.BF <- recompute(lowAnx.BF, iterations = 50000)
-lowAnx.BF[1]
+lowAff.BF <- recompute(lowAnx.BF, iterations = 50000)
+lowAff.BF[1]
 
-# high anxiety
-highAnx.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '2'),
+# high stress affect
+highAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '2'),
                            factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
 fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '2')))
-anova_stats(fit$`ID`)
 eta_sq(fit, partial = TRUE, ci.lvl = .9)
 # Bayes factors
-highAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means,  StressAffect == '2'), 
+highAff.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means,  StressAffect == '2'), 
                       whichRandom = "ID", iterations = 50000)
-highAnx.BF <- recompute(highAnx.BF, iterations = 50000)
-highAnx.BF[1]
+highAff.BF <- recompute(highAff.BF, iterations = 50000)
+highAff.BF[1]
 
 # rename variables for plot
 AFF.means$StressAffect    <- dplyr::recode(AFF.means$StressAffect, "1" = "Lower Stress Affect", "2" = "Higher Stress Affect" )
@@ -1368,6 +1098,7 @@ dev.off()
 
 
 
+
 #---------------------------------------------------------------------------
 #  SUPPLEMENTARY STARTEGY 1: INDIVIDUAL DIFFERENCES APPROACH 
 #---------------------------------------------------------------------------
@@ -1383,14 +1114,6 @@ Q_EFA.means.ID <- aggregate(ANXIETY ~ ID * TICS_SOOV * TICS_PREPE * TICS_WODI * 
 Q_EFA.means <- Q_EFA.means.ID
 Q_EFA.means$ID <- NULL
 
-# quick look at the covarivance structure
-r.subscale = cor(Q_EFA.means, use = "pairwise.complete.obs")
-cor.plot(Q_EFA.means,numbers=TRUE,main="correlation matrix")
-names(Q_EFA.means)[names(Q_EFA.means) == 'V1'] <- 'STAI'
-
-# check distributions before proceeding with FA
-describe (Q_EFA.means)
-pairs.panels(na.omit(Q_EFA.means))
 
 # determine the number of factors
 nFactor  <- fa.parallel(Q_EFA.means, fm = "ml")
@@ -1422,8 +1145,7 @@ dat <- cbind(Q_EFA.means.ID, axes)
 EFA_CHANGE <- join (CHANGE,dat, type = "full")
 
 # run full model for each factor simoutanously
-inter.whole = lmer(normPressFreq~ group*cue*prepost*(ML1+ML2+ML3+ML4) + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
-anova(inter.whole)
+inter.whole = lmer(normPressFreq~ group*cue*prepost*(ML1+ML2+ML3+ML4) + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE, control = lmerControl(optimizer ="bobyqa"))
 summary(inter.whole)
 Confint(inter.whole, level = 0.95) 
 
@@ -1436,19 +1158,17 @@ hist(residuals(inter.whole))
 
 # Stress affective -1 SD people low in axiety/stress have effect of overtraining
 EFA_CHANGE$AFF_pSD <- scale(EFA_CHANGE$ML3, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
-sslop.pSD = lmer(normPressFreq~ group*cue*prepost*AFF_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
-anova(sslop.pSD)
+sslop.pSD = lmer(normPressFreq~ group*cue*prepost*AFF_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE,control = lmerControl(optimizer ="bobyqa"))
 summary(sslop.pSD)
 Confint(sslop.pSD, level = 0.95) 
 
 # Social Isolation +1 SD people high in axiety/stress have effect of overtraining
 EFA_CHANGE$AFF_mSD <- scale(EFA_CHANGE$ML3, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
-sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*AFF_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE)
-anova(sslop.mSD)
+sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*AFF_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE,control = lmerControl(optimizer ="bobyqa"))
 summary(sslop.mSD)
 Confint(sslop.mSD, level = 0.95) 
 
-# ----------------------------- PLOT EXPLORATORY MODEL ---------------------------
+#----------------------------- PLOT EXPLORATORY MODEL ---------------------------
 
 # this tests the model predictions as we do in lmer but does not allow to display distributions
 AFF.means <- aggregate(EFA_CHANGE$normChangeBehav, by = list(EFA_CHANGE$ID, EFA_CHANGE$group, EFA_CHANGE$site, EFA_CHANGE$AFF_pSD, EFA_CHANGE$AFF_mSD, EFA_CHANGE$ML3), FUN='mean', na.rm = T) # extract means
@@ -1463,7 +1183,6 @@ lowAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = su
                            factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
 fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '1')))
-anova_stats(fit$`ID`)
 eta_sq(fit, partial = TRUE, ci.lvl = .9)
 
 
@@ -1478,8 +1197,8 @@ highAnx.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = s
                             factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
 fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '2')))
-anova_stats(fit$`ID`)
 eta_sq(fit, partial = TRUE, ci.lvl = .9)
+
 # Bayes factors
 highAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means,  StressAffect == '2'), 
                       whichRandom = "ID", iterations = 50000)
@@ -1517,6 +1236,8 @@ print(ppp)
 dev.off()
 
 
+
+
 #-----------------------------------------------------------------------------
 # SUPPLEMENTARY STARTEGY 2: SEPARATE TESTS FOR ANXIETY AND WORRIES
 #-----------------------------------------------------------------------------
@@ -1525,8 +1246,8 @@ dev.off()
 # let make sure that is not an artifact of the EFA 
 
 # -------------------- ANXIETY ----------------------------------------
-inter.anxiety = lmer(normPressFreq~ group*cue*prepost*ANXIETY + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
-anova(inter.anxiety)
+CHANGE$ANXIETY_z <- scale(CHANGE$ANXIETY)
+inter.anxiety = lmer(normPressFreq~ group*cue*prepost*ANXIETY_z + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE, control = lmerControl(optimizer ="bobyqa"))
 summary(inter.anxiety)
 Confint(inter.anxiety, level = 0.95) 
 
@@ -1538,25 +1259,22 @@ hist(residuals(inter.anxiety))
 # test and different points of the model to understand interaction
 
 # ANXIETY -1 SD people low in axiety/stress have effect of overtraining
-CHANGE$ANX_pSD <- scale(CHANGE$ANXIETY, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
-sslop.pSD = lmer(normPressFreq~ group*cue*prepost*ANX_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
-anova(sslop.pSD)
+CHANGE$ANX_pSD <- scale(CHANGE$ANXIETY_z, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
+sslop.pSD = lmer(normPressFreq~ group*cue*prepost*ANX_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE, control = lmerControl(optimizer ="bobyqa"))
 summary(sslop.pSD)
 Confint(sslop.pSD, level = 0.95) 
 
 # ANXIETY +1 SD people high in axiety/stress have effect of overtraining
-CHANGE$ANX_mSD <- scale(CHANGE$ANXIETY, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
-sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*ANX_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
-anova(sslop.mSD)
+CHANGE$ANX_mSD <- scale(CHANGE$ANXIETY_z, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
+sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*ANX_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE, control = lmerControl(optimizer ="bobyqa"))
 summary(sslop.mSD)
 Confint(sslop.mSD, level = 0.95) 
 
 
-
 # -------------------- CHRONIC WORRIES ----------------------------------------
-inter.wory = lmer(normPressFreq~ group*cue*prepost*TICS_WORY + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
-anova(inter.wory)
-summary(inter.wory )
+CHANGE$TICS_WORY_z <- scale(CHANGE$TICS_WORY)
+inter.wory = lmer(normPressFreq~ group*cue*prepost*TICS_WORY_z + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE,control = lmerControl(optimizer ="bobyqa"))
+summary(inter.wory)
 Confint(inter.wory , level = 0.95) 
 
 # ----- assumptions check
@@ -1567,16 +1285,14 @@ hist(residuals(inter.wory))
 # test and different points of the model to understand interaction
 
 # WORRIES -1 SD people low in axiety/stress have effect of overtraining
-CHANGE$WORY_pSD <- scale(CHANGE$TICS_WORY, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
-sslop.pSD = lmer(normPressFreq~ group*cue*prepost*WORY_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
-anova(sslop.pSD)
+CHANGE$WORY_pSD <- scale(CHANGE$TICS_WORY_z, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
+sslop.pSD = lmer(normPressFreq~ group*cue*prepost*WORY_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE,control = lmerControl(optimizer ="bobyqa"))
 summary(sslop.pSD)
 Confint(sslop.pSD, level = 0.95) 
 
 # WORRIES +1 SD people high in axiety/stress have effect of overtraining
-CHANGE$WORY_mSD <- scale(CHANGE$TICS_WORY, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
-sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*WORY_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE)
-anova(sslop.mSD)
+CHANGE$WORY_mSD <- scale(CHANGE$TICS_WORY_z, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
+sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*WORY_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = CHANGE, REML=FALSE,control = lmerControl(optimizer ="bobyqa"))
 summary(sslop.mSD)
 Confint(sslop.mSD, level = 0.95) 
 
@@ -1601,7 +1317,7 @@ lowAnx.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = su
 fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data = subset(ANX.means, AnxietySplit == '1')))
 eta_sq(fit, partial = TRUE, ci.lvl = .9) # attention this might be slightly off since is estimated with aov (type 1 anvoa) 
 # Bayes factors 
-lowAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(ANXWORY.means, AnxietySplit == '1'), 
+lowAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(ANX.means, AnxietySplit == '1'), 
                      whichRandom = "ID", iterations = 50000)
 lowAnx.BF <- recompute(lowAnx.BF, iterations = 50000)
 lowAnx.BF[1]
@@ -1613,7 +1329,7 @@ highAnx.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = s
 fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data = subset(ANX.means, AnxietySplit == '2')))
 eta_sq(fit, partial = TRUE, ci.lvl = .9)
 # Bayes factors
-highAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(ANXWORY.means, AnxietySplit == '2'), 
+highAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(ANX.means, AnxietySplit == '2'), 
                       whichRandom = "ID", iterations = 50000)
 highAnx.BF <- recompute(highAnx.BF, iterations = 50000)
 highAnx.BF[1]
@@ -1697,66 +1413,6 @@ pdf(file.path(figures_path,'Figure_S2_Anxiety_Worries.pdf'),width=7,height=8)
 print(ppp)
 dev.off()
 
-
-
-
-
-
-
-
-#-----------------------------------------------------------------------------
-#          SUPPLEMENTARY OUTCOME DEVALUATION CHANGES DISTRUBUTIONS LITTERATURE
-#-----------------------------------------------------------------------------
-
-# ------------------------- COMPAIRE DISTRIBUTIONS WITH OTHER STUDIES -------
-
-
-DEWIT <- ddply(DEWIT, .(subj), transform, normChangeBehav  = (normPressFreq[prepost=="post" & cue=='Valued'] - normPressFreq[prepost=="pre" & cue=='Valued']) - (normPressFreq[prepost=="post" & cue=='Devalued'] - normPressFreq[prepost=="pre" & cue=='Devalued']))
-TRICOMI <- ddply(TRICOMI, .(ID), transform, normChangeBehav  = (mean(normPressFreq[prepost=="post" & cue=='Valued']) - normPressFreq[prepost=="pre" & cue=='Valued']) - (mean(normPressFreq[prepost=="post" & cue=='Devalued']) - normPressFreq[prepost=="pre" & cue=='Devalued']))
-CECELI <- ddply(CECELI, .(ID), transform, normChangeBehav  = (normPressFreq[prepost=="post" & cue=='Valued'] - normPressFreq[prepost=="pre" & cue=='Valued']) - (normPressFreq[prepost=="post" & cue=='Devalued'] - normPressFreq[prepost=="pre" & cue=='Devalued']))
-
-
-# merge all datasets with the effect of interest
-CHANGE.mean <- ddply(CHANGE, .(ID,group,cue,prepost), summarise, normChangeBehav= mean((normChangeBehav))) # we need the mean not to increase the N artifically
-CHANGE.mean <- subset(CHANGE.mean, prepost == 'pre') # we need to subset not to have doubles
-CHANGE.mean <- subset(CHANGE.mean, cue == 'Valued') # we need to subset not to have doubles
-CHANGE.mean$ID <- 1:length(CHANGE.mean$ID) # let's change the id to avoid overlapping with others datasets
-CHANGE.mean$study <- factor(c("ICHB Study"))
-
-DEWIT.v <- subset(DEWIT, prepost == 'pre')
-DEWIT.v <- subset(DEWIT.v, cue == 'Valued') # we need to subset not to have doubles
-DEWIT.v$ID <- 1:length(DEWIT.v$subj)+1000 # let's change the id to avoid overlapping with others datasets
-DEWIT.v$site <- factor(c("DeWit et al., 2018"))
-DEWIT.v$study <- factor(c("DeWit et al., 2018"))
-
-TRICOMI.v <- subset(TRICOMI, prepost == 'pre')
-TRICOMI.v <- subset(TRICOMI.v, cue == 'Valued')
-TRICOMI.v$ID <- 1:length(TRICOMI.v$ID)+2000 # let's change the id to avoid overlapping with others datasets
-TRICOMI.v$study <- factor(c("Tricomi et al., 2009"))
-
-CECELI.mean <- ddply(CECELI, .(ID,group,cue,prepost), summarise, normChangeBehav= mean((normChangeBehav))) # we need the mean not to increase the N artifically
-CECELI.mean <- subset(CECELI.mean, prepost == 'pre') # we need to subset not to have doubles
-CECELI.mean <- subset(CECELI.mean, cue == 'Valued') # we need to subset not to have doubles
-CECELI.mean$ID <- 1:length(CECELI.mean$ID)+3000 # let's change the id to avoid overlapping with others datasets
-CECELI.mean$study <- factor(c("Ceceli et al., in prep"))
-
-
-V <- join(CHANGE.mean,DEWIT.v, type = 'full')
-V <- join(V,TRICOMI.v, type = 'full')
-V <- join(V,CECELI.mean, type = 'full')
-
-
-pp = ggplot(data = V, aes (x = study, y = normChangeBehav, fill = study)) +
-  geom_point(aes(color = study),position = position_jitterdodge(jitter.width = .5, jitter.height = 0))+
-  geom_violin(aes(color = study, fill = study),alpha = .3, size = .5)+ 
-  theme_bw() +
-  coord_flip()+
-  facet_grid(group~., scales = "free" )+
-  labs(
-    title = '',
-    x = 'Experiment site',
-    y = "Normalized Change in Behavior"
-  ) 
 
 
 

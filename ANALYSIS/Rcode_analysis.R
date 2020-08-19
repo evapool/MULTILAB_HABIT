@@ -33,6 +33,7 @@ library(flexmix)
 library(psych)
 library(emmeans)
 library(devtools)
+library(effectsize)
 
 #---------------------------------------------------------------------------
 #                    PRELIMINARY STUFF 
@@ -122,9 +123,7 @@ HUNGER.means = subset(HUNGER.means, !ID == "115") # the recording of the  hunger
 hunger.c1.stat <- aov_car(hunger ~ group*prepost + Error (ID/prepost), data = subset(HUNGER.means, site == 'Caltech1'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(hunger ~ group*prepost + Error(ID/prepost), data= subset(HUNGER.means, site == 'Caltech1')))
-anova_stats(fit$`ID:prepost`)
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(197.80), df = c(1), df_error = c(60))
 
 # Bayes factors
 hunger.c1.BF <- anovaBF(hunger ~ group*prepost  + ID, data = subset(HUNGER.means, site == 'Caltech1'), 
@@ -138,9 +137,7 @@ hunger.c1.BF[2]# main prepost
 hunger.c2.stat <- aov_car(hunger ~ group*prepost + Error (ID/prepost), data = subset(HUNGER.means, site == 'Caltech2'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(hunger ~ group*prepost + Error(ID/prepost), data= subset(HUNGER.means, site == 'Caltech2')))
-anova_stats(fit$`ID:prepost`)
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(92.40), df = c(1), df_error = c(57))
 
 # Bayes factors
 hunger.c2.BF <- anovaBF(hunger ~ group*prepost  + ID, data = subset(HUNGER.means, site == 'Caltech2'), 
@@ -155,9 +152,7 @@ hunger.c2.BF[2] # main prepost
 hunger.h.stat <- aov_car(hunger ~ group*prepost + Error (ID/prepost), data = subset(HUNGER.means, site == 'Hamburg'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(hunger ~ group*prepost + Error(ID/prepost), data= subset(HUNGER.means, site == 'Hamburg')))
-anova_stats(fit$`ID:prepost`)
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(230.55), df = c(1), df_error = c(62))
 
 # Bayes factors
 hunger.h.BF <- anovaBF(hunger ~ group*prepost  + ID, data = subset(HUNGER.means, site == 'Hamburg'), 
@@ -172,9 +167,7 @@ hunger.h.BF[2] # main prepost
 hunger.s.stat <- aov_car(hunger ~ group*prepost + Error (ID/prepost), data = subset(HUNGER.means, site == 'Sydney'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(hunger ~ group*prepost + Error(ID/prepost), data= subset(HUNGER.means, site == 'Sydney')))
-anova_stats(fit$`ID:prepost`)
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(309.26), df = c(1), df_error = c(58))
 
 # Bayes factors
 hunger.s.BF <- anovaBF(hunger ~ group*prepost  + ID, data = subset(HUNGER.means, site == 'Sydney'), 
@@ -189,9 +182,7 @@ hunger.s.BF[2] # main prepost
 hunger.t.stat <- aov_car(hunger ~ group*prepost + Error (ID/prepost), data = subset(HUNGER.means, site == 'Tel_Aviv'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(hunger ~ group*prepost + Error(ID/prepost), data= subset(HUNGER.means, site == 'Tel_Aviv')))
-anova_stats(fit$`ID:prepost`)
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(236.92), df = c(1), df_error = c(58))
 
 # Bayes factors
 hunger.t.BF <- anovaBF(hunger ~ group*prepost  + ID, data = subset(HUNGER.means, site == 'Tel_Aviv'), 
@@ -214,15 +205,12 @@ SNACK.index <- subset(SNACK.index, cue!='Devalued')
 snack.c1.stat <- aov_car(outcomeliking ~ group*prepost + Error (ID/prepost), data = subset(SNACK.index, site == 'Caltech1'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(outcomeliking ~ group*prepost + Error(ID/prepost), data= subset(SNACK.index, site == 'Caltech1')))
-anova_stats(fit$`ID:prepost`)
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c( 173.84), df = c(1), df_error = c(60))
 
 # Bayes factors
 snack.c1.BF <- anovaBF(outcomeliking ~ group*prepost  + ID, data = subset(SNACK.index, site == 'Caltech1'), 
                         whichRandom = "ID", iterations = 50000)
 snack.c1.BF <- recompute(snack.c1.BF, iterations = 50000)
-
 snack.c1.BF[1]# main prepost
 
 #--------- pasadena 2
@@ -230,9 +218,7 @@ snack.c1.BF[1]# main prepost
 snack.c2.stat <- aov_car(outcomeliking ~ group*prepost + Error (ID/prepost), data = subset(SNACK.index, site == 'Caltech2'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(outcomeliking ~ group*prepost + Error(ID/prepost), data= subset(SNACK.index, site == 'Caltech2')))
-anova_stats(fit$`ID:prepost`)
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(51.07), df = c(1), df_error = c(57))
 
 # Bayes factors
 snack.c2.BF <- anovaBF(outcomeliking ~ group*prepost  + ID, data = subset(SNACK.index, site == 'Caltech2'), 
@@ -243,16 +229,12 @@ snack.c2.BF[1]# main prepost
 
 
 #--------- hamburg
-# descriptive
-snack.h.desc = summaryBy(outcomeliking ~ prepost, data =  subset(SNACK.index, site == 'Hamburg'),
-                          FUN = function(x) { c(m = mean(x), s = sd(x)) } )
-#stats
+
+#main
 snack.h.stat <- aov_car(outcomeliking ~ group*prepost + Error (ID/prepost), data = subset(SNACK.index, site == 'Hamburg'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(outcomeliking ~ group*prepost + Error(ID/prepost), data= subset(SNACK.index, site == 'Hamburg')))
-anova_stats(fit$`ID:prepost`)
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(92.38), df = c(1), df_error = c(63))
 
 # Bayes factors
 snack.h.BF <- anovaBF(outcomeliking ~ group*prepost  + ID, data = subset(SNACK.index, site == 'Hamburg'), 
@@ -266,9 +248,7 @@ snack.h.BF[1]# main prepost
 snack.s.stat <- aov_car(outcomeliking ~ group*prepost + Error (ID/prepost), data = subset(SNACK.index, site == 'Sydney'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(outcomeliking ~ group*prepost + Error(ID/prepost), data= subset(SNACK.index, site == 'Sydney')))
-anova_stats(fit$`ID:prepost`)
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(87.72), df = c(1), df_error = c(58))
 
 # Bayes factors
 snack.s.BF <- anovaBF(outcomeliking ~ group*prepost  + ID, data = subset(SNACK.index, site == 'Sydney'), 
@@ -283,9 +263,7 @@ snack.s.BF[1]
 snack.t.stat <- aov_car(outcomeliking ~ group*prepost + Error (ID/prepost), data = subset(SNACK.index, site == 'Tel_Aviv'), anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(outcomeliking ~ group*prepost + Error(ID/prepost), data= subset(SNACK.index, site == 'Tel_Aviv')))
-anova_stats(fit$`ID:prepost`)
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(44.46), df = c(1), df_error = c(58))
 
 # Bayes factors
 snack.t.BF <- anovaBF(outcomeliking ~ group*prepost  + ID, data = subset(SNACK.index, site == 'Tel_Aviv'), 
@@ -349,8 +327,7 @@ CALTECH.index <- getChangeIndex(C.CALTECH)# aggregate based on pre-post
 int.c1.stat <- aov_car(pressFreq ~ group*cue + Error (ID/cue), data = CALTECH.index, anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(pressFreq ~ group*cue + Error (ID/cue), data= CALTECH.index))
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(0.73), df = c(1), df_error = c(60))
 
 # Bayes factors
 int.c1.BF <- anovaBF(pressFreq ~ group*cue  + ID, data = CALTECH.index, 
@@ -368,8 +345,8 @@ CALTECH2.index <- getChangeIndex(C.CALTECH)# aggregate based on pre-post
 int.c2.stat <- aov_car(pressFreq ~ group*cue + Error (ID/cue), data = CALTECH2.index, anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(pressFreq ~ group*cue + Error (ID/cue), data= CALTECH2.index))
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(1.41), df = c(1), df_error = c(57))
+
 
 # Bayes factors
 int.c2.BF <- anovaBF(pressFreq ~ group*cue  + ID, data = CALTECH2.index, 
@@ -387,8 +364,7 @@ HAMBURG.index <- getChangeIndex(C.HAMBURG)# aggregate based on pre-post
 int.h.stat <- aov_car(pressFreq ~ group*cue + Error (ID/cue), data = HAMBURG.index, anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(pressFreq ~ group*cue + Error (ID/cue), data= HAMBURG.index))
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(0.91), df = c(1), df_error = c(63))
 
 # Bayes factors
 int.h.BF <- anovaBF(pressFreq ~ group*cue  + ID, data = HAMBURG.index, 
@@ -406,8 +382,7 @@ SYDNEY.index <- getChangeIndex(C.SYDNEY)# aggregate based on pre-post
 int.s.stat <- aov_car(pressFreq ~ group*cue + Error (ID/cue), data = SYDNEY.index, anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(pressFreq ~ group*cue + Error (ID/cue), data= SYDNEY.index))
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(0.19), df = c(1), df_error = c(58))
 
 # Bayes factors
 int.s.BF <- anovaBF(pressFreq ~ group*cue  + ID, data = SYDNEY.index, 
@@ -426,8 +401,7 @@ TELAVIV.index <- getChangeIndex(C.TELAVIV)# aggregate based on pre-post
 int.t.stat <- aov_car(pressFreq ~ group*cue + Error (ID/cue), data = TELAVIV.index, anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
-fit <- (aov(pressFreq ~ group*cue + Error (ID/cue), data= TELAVIV.index))
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(0.42), df = c(1), df_error = c(58))
 
 # Bayes factors
 int.t.BF <- anovaBF(pressFreq ~ group*cue  + ID, data = TELAVIV.index, 
@@ -928,7 +902,7 @@ dev.off()
 
 
 
-#------------------------ DATA REDUCTION TO EXTRACT ORTHOGONAL FACTORS ------
+#------------------------ DATA REDUCTION  ----------------------------------
 
 # prepare database for the FA
 Q_EFA.means.ID <- aggregate(ANXIETY ~ ID * TICS_SOOV * TICS_PREPE * TICS_WODI * TICS_EXWO * TICS_LACK * TICS_SOTE * TICS_SOIS * TICS_WORY * TICS_WOOV * BIS_motor * BIS_attentional * BIS_nonplanning,
@@ -1045,8 +1019,7 @@ AFF.means$StressAffect<- factor(AFF.means$StressAffect)
 lowAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '1'),
                           factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
-fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '1')))
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(3.98), df = c(1), df_error = c(95))
 
 
 # Bayes factors 
@@ -1059,8 +1032,8 @@ lowAff.BF[1]
 highAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '2'),
                            factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
-fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '2')))
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(0.35), df = c(1), df_error = c(94))
+
 # Bayes factors
 highAff.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means,  StressAffect == '2'), 
                       whichRandom = "ID", iterations = 50000)
@@ -1099,6 +1072,7 @@ dev.off()
 
 
 
+
 #---------------------------------------------------------------------------
 #  SUPPLEMENTARY STARTEGY 1: INDIVIDUAL DIFFERENCES APPROACH 
 #---------------------------------------------------------------------------
@@ -1106,7 +1080,6 @@ dev.off()
 # non collinar factor for ancova-like approach
 
 #------------------------ DATA REDUCTION TO EXTRACT ORTHOGONAL FACTORS ------
-
 
 # prepare database for the FA
 Q_EFA.means.ID <- aggregate(ANXIETY ~ ID * TICS_SOOV * TICS_PREPE * TICS_WODI * TICS_EXWO * TICS_LACK * TICS_SOTE * TICS_SOIS * TICS_WORY * TICS_WOOV * BIS_motor * BIS_attentional * BIS_nonplanning,
@@ -1182,8 +1155,7 @@ AFF.means$StressAffect<- factor(AFF.means$StressAffect)
 lowAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '1'),
                            factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
-fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '1')))
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(4.84), df = c(1), df_error = c(95))
 
 
 # Bayes factors 
@@ -1196,8 +1168,8 @@ lowAnx.BF[1]
 highAnx.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '2'),
                             factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
-fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data= subset(AFF.means, StressAffect == '2')))
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(0.34), df = c(1), df_error = c(94))
+
 
 # Bayes factors
 highAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means,  StressAffect == '2'), 
@@ -1226,14 +1198,13 @@ ppp <- pp + theme_bw(base_size = 20, base_family = "Helvetica")+
         strip.background = element_rect(color="white", fill="white", linetype="solid"),
         legend.position="none",
         legend.text  = element_blank(),
-        #panel.grid.major = element_blank(),
-        #panel.grid.minor = element_blank(),
         axis.title.x = element_text(size = 22),
         axis.title.y = element_text(size = 22))
 
 pdf(file.path(figures_path,'Figure_IndividualDifferences_S1.pdf'))
 print(ppp)
 dev.off()
+
 
 
 
@@ -1314,8 +1285,8 @@ plyr::count(ANX.means$ID)
 lowAnx.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(ANX.means, AnxietySplit == '1'),
                           factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
-fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data = subset(ANX.means, AnxietySplit == '1')))
-eta_sq(fit, partial = TRUE, ci.lvl = .9) # attention this might be slightly off since is estimated with aov (type 1 anvoa) 
+F_to_eta2(f = c(6.19), df = c(1), df_error = c(100))
+
 # Bayes factors 
 lowAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(ANX.means, AnxietySplit == '1'), 
                      whichRandom = "ID", iterations = 50000)
@@ -1326,8 +1297,8 @@ lowAnx.BF[1]
 highAnx.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(ANX.means, AnxietySplit == '2'),
                             factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
-fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data = subset(ANX.means, AnxietySplit == '2')))
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(0.19), df = c(1), df_error = c(99))
+
 # Bayes factors
 highAnx.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(ANX.means, AnxietySplit == '2'), 
                       whichRandom = "ID", iterations = 50000)
@@ -1347,8 +1318,8 @@ plyr::count(WORY.means$ID)
 lowWory.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(WORY.means, WorriesSplit == '1'),
                            factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
-fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data = subset(WORY.means, WorriesSplit == '1')))
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(5.18), df = c(1), df_error = c(99))
+
 # Bayes factors 
 lowWory.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(WORY.means, WorriesSplit == '1'), 
                      whichRandom = "ID", iterations = 50000)
@@ -1359,14 +1330,13 @@ lowWory.BF[1]
 highWory.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(WORY.means, WorriesSplit  == '2'),
                             factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
-fit <- (aov(normChangeBehav  ~ group + site + Error(ID), data = subset(WORY.means, WorriesSplit  == '2')))
-eta_sq(fit, partial = TRUE, ci.lvl = .9)
+F_to_eta2(f = c(0.11), df = c(1), df_error = c(99))
+
 # Bayes factors
 highWory.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(WORY.means, WorriesSplit  == '2'), 
                       whichRandom = "ID", iterations = 50000)
 highWory.BF <- recompute(highWory.BF, iterations = 50000)
 highWory.BF[1]
-
 
 
 # ------------- Create databse and do figure

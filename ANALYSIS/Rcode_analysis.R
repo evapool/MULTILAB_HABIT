@@ -11,7 +11,7 @@
 # Created by E.R.P. on NOVEMBER 2018                                                               #
 # Verified by R.G on DECEMBER 2018                                                                 #
 # Modified by E.R.P on JULY 2020                                                                   #
-# Verified by R.G  on August 2020                                                                  #
+# Verified by R.G and A.F. on August 2020                                                                  #
 ####################################################################################################
 
 
@@ -87,6 +87,7 @@ C.DAY3 <- subset(DAY3, run == '4' | run == '5')
 
 CHANGE <- rbind(C.DAY1,C.DAY3)
 
+
 # get variable of interest
 CHANGE <- ddply(CHANGE, .(ID), transform, normChangeBehav  = (mean(normPressFreq[prepost=="post" & cue=='Valued']) - mean(normPressFreq[prepost=="pre" & cue=='Valued'])) - (mean(normPressFreq[prepost=="post" & cue=='Devalued']) - mean(normPressFreq[prepost=="pre" & cue=='Devalued'])))
 CHANGE <- ddply(CHANGE, .(ID), transform, normChangeLiking = (mean(normLiking[prepost=="post" & cue=='Valued']) - mean(normLiking[prepost=="pre" & cue=='Valued'])) - (mean(normLiking[prepost=="post" & cue=='Devalued']) - mean(normLiking[prepost=="pre" & cue=='Devalued'])))
@@ -103,9 +104,6 @@ C.CALTECH2= subset(CHANGE, site == 'Caltech2')
 C.HAMBURG = subset(CHANGE, site == 'Hamburg')
 C.SYDNEY  = subset(CHANGE, site == 'Sydney')
 C.TELAVIV = subset(CHANGE, site == 'Tel_Aviv')
-
-
-
 
 
 
@@ -258,7 +256,7 @@ snack.s.BF[1]
 
 
 
-#--------- sydeny
+#--------- tel-aviv
 #main
 snack.t.stat <- aov_car(outcomeliking ~ group*prepost + Error (ID/prepost), data = subset(SNACK.index, site == 'Tel_Aviv'), anova_table = list(correction = "GG", es = "pes"))
 
@@ -272,7 +270,7 @@ snack.t.BF <- recompute(snack.t.BF, iterations = 50000)
 snack.t.BF[1]# main prepost
 
 
-#----------------------------- FIGURE -------------------------
+#----------------------------- FIGURE 2-------------------------
 MC_wide <- join (HUNGER.means, SNACK.index)
 MC <- gather(MC_wide, question, ratings, hunger, outcomeliking, factor_key=TRUE)
 
@@ -304,9 +302,11 @@ ppp <- pp + theme_bw(base_size = 14, base_family = "Helvetica")+
         panel.grid.minor = element_blank(),
         axis.title.y = element_text(size = 14, face = "bold"))
 
-pdf(file.path(figures_path,'Figure_ManipulationCheck.pdf'))
+pdf(file.path(figures_path,'Figure_2_ManipulationCheck.pdf'))
 print(ppp)
 dev.off()
+
+
 
 
 
@@ -323,7 +323,7 @@ dev.off()
 C.CALTECH = subset(CHANGE, site == 'Caltech1')
 CALTECH.index <- getChangeIndex(C.CALTECH)# aggregate based on pre-post
 
-# stat
+# main
 int.c1.stat <- aov_car(pressFreq ~ group*cue + Error (ID/cue), data = CALTECH.index, anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
@@ -341,7 +341,7 @@ int.c1.BF[4]/int.c1.BF[3]
 C.CALTECH = subset(CHANGE, site == 'Caltech2')
 CALTECH2.index <- getChangeIndex(C.CALTECH)# aggregate based on pre-post
 
-# stat
+# main
 int.c2.stat <- aov_car(pressFreq ~ group*cue + Error (ID/cue), data = CALTECH2.index, anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
@@ -360,7 +360,7 @@ int.c2.BF[4]/int.c2.BF[3]
 C.HAMBURG = subset(CHANGE, site == 'Hamburg')
 HAMBURG.index <- getChangeIndex(C.HAMBURG)# aggregate based on pre-post
 
-# stat
+# main
 int.h.stat <- aov_car(pressFreq ~ group*cue + Error (ID/cue), data = HAMBURG.index, anova_table = list(correction = "GG", es = "pes"))
 
 # effect sizes (90%CI)
@@ -412,11 +412,13 @@ int.t.BF[4]/int.t.BF[3]
 
 
 
+
+
 #---------------------------------------------------------------------------
 #                  OUTCOME DEVALUATION CHANGES META-ANALYSIS
 #---------------------------------------------------------------------------
 
-#---------------------------- OPEN AND FORMATOTHER DATABASES  -------------------
+#---------------------------- OPEN AND FORMAT OTHER DATABASES  -------------------
 TRICOMI   <- read.delim(file.path(home_path,'DATA','Tricomi_2009.txt'), header = T, sep ='') # read in dataset
 DEWIT_full<- read.delim(file.path(home_path,'DATA','deWit_2017.txt'), header = T, sep ='') # read in dataset
 CECELI    <- read.delim(file.path(home_path,'DATA','Ceceli_inprep.txt'), header = T, sep ='') # read in dataset
@@ -453,7 +455,7 @@ CECELI.CHANGE <- rbind(CECELI.C.DAY1,CECELI.C.DAY3)
 # get variable of interest
 CECELI.CHANGE <- ddply(CECELI.CHANGE, .(ID), transform, normChangeBehav  = (mean(normPressFreq[prepost=="post" & cue=='Valued']) - mean(normPressFreq[prepost=="pre" & cue=='Valued'])) - (mean(normPressFreq[prepost=="post" & cue=='Devalued']) - mean(normPressFreq[prepost=="pre" & cue=='Devalued'])))
  
-#average the data
+# average the data
 CECELI <- CECELI.CHANGE
 
 # define factors of interest in Ceceli
@@ -520,7 +522,7 @@ CECELI.day3    = subset(CECELI.meta, group == "3-day")
 
 # estimate mean standard deviation and correlation
 
-# pasadena 2
+# pasadena 1
 estimate.caltech.day1 = summaryBy(metaBehav ~ cue, data = C.CALTECH.day1,
                                   FUN = function(x) { c(m = mean(x), s = sd(x), n = length(x)) } )
 corr.caltech.day1 = rmcorr(ID,metaBehav[cue == 'Valued'],metaBehav[cue == 'Devalued'],dataset = C.CALTECH.day1)
@@ -769,7 +771,7 @@ ri  = c (corr.caltech.day1$r         ,
          corr.ceceli.day3$r) # correlation
 
 
-#---------------------------- RE META AND FOREST PLOT  -------------------
+#---------------------------- RE META  -------------------
 
 metadata = data.frame( site, year, training, mean_valued, mean_devalued, std_valued, std_devalued, n_valued, n_devalued,ri)
 
@@ -789,7 +791,7 @@ res.day1 <- rma.mv(yi, vi, subset=(training=="moderate-trainig"), data=meta.data
 res.day3 <- rma.mv(yi, vi, subset=(training=="extensive-trainig"), data=meta.data)
 
 
-# --------------------------------------- plot
+# --------------------------- FIGURE 3 ---------------------------
 
 par(mar=c(4,4,1,2)) # decrease margins so the full space is used
 par(cex=0.8, font = 2)### switch to bold font
@@ -820,8 +822,10 @@ text( 2, 26.5, "MC [95% CI]", pos=2)
 par(cex=1, font=3)### switch to bold font
 text(-0.3, 26.5, c("N"))
 
-dev.print(pdf, file.path(figures_path,'Figure_forest.pdf'))
+dev.print(pdf, file.path(figures_path,'Figure_3_forest.pdf'))
 dev.off()
+
+
 
 
 
@@ -833,14 +837,14 @@ dev.off()
 #                  OUTCOME DEVALUATION CHANGES DISTRUBUTIONS ALL
 #---------------------------------------------------------------------------
 
-# --------------------------- FORMAT DATABASE ------------------------------
+#---------------------------- FORMAT DATABASE ------------------------------
 
 # first we need the aggregated data
 CHANGE.means <- aggregate(CHANGE$normChangeBehav, by = list(CHANGE$ID, CHANGE$group, CHANGE$site), FUN='mean') # extract means
 colnames(CHANGE.means) <- c('ID','group','site', 'normChangeBehav')
 
 
-#--------------------------- FLEXMIX TO IDENTIFY CLUSTERS -----------------
+#---------------------------- FLEXMIX TO IDENTIFY CLUSTERS -----------------
 
 #  what is the number of clusters that better explains the data
 n_clusters <- stepFlexmix(normChangeBehav ~ group, data = CHANGE.means, control = list(verbose = 0), k = 1:5, nrep = 200)
@@ -860,7 +864,7 @@ print(table(clusters(mixlm), CHANGE.means$group))
 CHANGE.means$Cluster = factor(clusters(mixlm)) # create a variable based on the clustering
 
 
-#--------------------------- PLOT HISTOGRAM AND CLUSTERS -----------------
+#---------------------------- FIGURE 4 -----------------
 
 # rename variables for plot
 CHANGE.means$group     <- dplyr::recode(CHANGE.means$group, "1-day" = "Moderate training", "3-day" = "Extensive training" )
@@ -883,9 +887,11 @@ ppp <-  pp + theme_bw(base_size = 17, base_family = "Helvetica")+
         axis.title.x = element_text(size = 22),
         axis.title.y = element_text(size = 22))
 
-pdf(file.path(figures_path,'Figure_histograms_clusters.pdf'))
+pdf(file.path(figures_path,'Figure_4_histograms_clusters.pdf'))
 print(ppp)
 dev.off()
+
+
 
 
 
@@ -902,7 +908,7 @@ dev.off()
 
 
 
-#------------------------ DATA REDUCTION  ----------------------------------
+#----------------------------  DATA REDUCTION  ----------------------------------
 
 # prepare database for the FA
 Q_EFA.means.ID <- aggregate(ANXIETY ~ ID * TICS_SOOV * TICS_PREPE * TICS_WODI * TICS_EXWO * TICS_LACK * TICS_SOTE * TICS_SOIS * TICS_WORY * TICS_WOOV * BIS_motor * BIS_attentional * BIS_nonplanning,
@@ -939,7 +945,7 @@ dev.off()
 s = factor.scores (Q_EFA.means, quest.1.efa) # 
 
 
-#------------------------ USE FACTOR AS AS MODERATOR IN THE MAIN ANALYSIS ----------
+#---------------------------- USE FACTOR AS AS MODERATOR IN THE MAIN ANALYSIS ----------
 
 # merge with the FULL database
 axes <- s$scores
@@ -1004,7 +1010,7 @@ sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*AFF_mSD + itemxcondition + si
 summary(sslop.mSD)
 Confint(sslop.mSD, level = 0.95) 
 
-#----------------------------- PLOT EXPLORATORY MODEL ---------------------------
+#---------------------------- FIGURE 5 ---------------------------
 
 # this tests the model predictions as we do in lmer but does not allow to display distributions
 AFF.means <- aggregate(EFA_CHANGE$normChangeBehav, by = list(EFA_CHANGE$ID, EFA_CHANGE$group, EFA_CHANGE$site, EFA_CHANGE$AFF_pSD, EFA_CHANGE$AFF_mSD, EFA_CHANGE$ML3), FUN='mean', na.rm = T) # extract means
@@ -1064,9 +1070,11 @@ ppp <- pp + theme_bw(base_size = 20, base_family = "Helvetica")+
         axis.title.x = element_text(size = 22),
         axis.title.y = element_text(size = 22))
 
-pdf(file.path(figures_path,'Figure_IndividualDifferences.pdf'))
+pdf(file.path(figures_path,'Figure_5_IndividualDifferences.pdf'))
 print(ppp)
 dev.off()
+
+
 
 
 
@@ -1079,7 +1087,7 @@ dev.off()
 
 # non collinar factor for ancova-like approach
 
-#------------------------ DATA REDUCTION TO EXTRACT ORTHOGONAL FACTORS ------
+#---------------------------- DATA REDUCTION TO EXTRACT ORTHOGONAL FACTORS ------
 
 # prepare database for the FA
 Q_EFA.means.ID <- aggregate(ANXIETY ~ ID * TICS_SOOV * TICS_PREPE * TICS_WODI * TICS_EXWO * TICS_LACK * TICS_SOTE * TICS_SOIS * TICS_WORY * TICS_WOOV * BIS_motor * BIS_attentional * BIS_nonplanning,
@@ -1108,7 +1116,7 @@ dev.off()
 s = factor.scores (Q_EFA.means, quest.1.efa) # 
 
 
-#------------------------ USE FACTOR AS AS MODERATOR IN THE MAIN ANALYSIS ----------
+#---------------------------- USE FACTOR AS AS MODERATOR IN THE MAIN ANALYSIS ----------
 
 # merge with the FULL database
 axes <- s$scores
@@ -1141,7 +1149,7 @@ sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*AFF_mSD + itemxcondition + si
 summary(sslop.mSD)
 Confint(sslop.mSD, level = 0.95) 
 
-#----------------------------- PLOT EXPLORATORY MODEL ---------------------------
+#---------------------------- FIGURE S1 ---------------------------
 
 # this tests the model predictions as we do in lmer but does not allow to display distributions
 AFF.means <- aggregate(EFA_CHANGE$normChangeBehav, by = list(EFA_CHANGE$ID, EFA_CHANGE$group, EFA_CHANGE$site, EFA_CHANGE$AFF_pSD, EFA_CHANGE$AFF_mSD, EFA_CHANGE$ML3), FUN='mean', na.rm = T) # extract means
@@ -1201,9 +1209,12 @@ ppp <- pp + theme_bw(base_size = 20, base_family = "Helvetica")+
         axis.title.x = element_text(size = 22),
         axis.title.y = element_text(size = 22))
 
-pdf(file.path(figures_path,'Figure_IndividualDifferences_S1.pdf'))
+pdf(file.path(figures_path,'Figure_S1_IndividualDifferences.pdf'))
 print(ppp)
 dev.off()
+
+
+
 
 
 
@@ -1269,7 +1280,7 @@ Confint(sslop.mSD, level = 0.95)
 
 
 
-# -------------------- PLOTS ----------------------------------------
+# -------------------- FIGURE S2 ----------------------------------------
 
 
 
@@ -1374,19 +1385,12 @@ ppp <- pp + theme_bw(base_size = 20, base_family = "Helvetica")+
         strip.background = element_rect(color="white", fill="white", linetype="solid"),
         legend.position="none",
         legend.text  = element_blank(),
-        #panel.grid.major = element_blank(),
-        #panel.grid.minor = element_blank(),
         axis.title.x = element_text(size = 16),
         axis.title.y = element_text(size = 16))
 
 pdf(file.path(figures_path,'Figure_S2_Anxiety_Worries.pdf'),width=7,height=8)
 print(ppp)
 dev.off()
-
-
-
-
-
 
 
 

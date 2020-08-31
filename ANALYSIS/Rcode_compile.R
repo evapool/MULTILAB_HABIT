@@ -8,10 +8,9 @@
 #                    International consortium for the study of habits                              #
 #                                                                                                  #
 #                                                                                                  #
-# Started  by Eva on NOVEMBER 2018                                                                 #
-# Verified by Rani Gera on DECEMBER 2018                                                           #
-# Modified by Eva on JULY 2020                                                                     #
-# Verified by XX on                                                                                #
+# Started  by E.R.P on NOVEMBER 2018                                                               #
+# Verified by R.G on DECEMBER 2018                                                                 #
+# Modified by  E.R.P on JULY 2020                                                                  #
 ####################################################################################################
 
 

@@ -943,7 +943,7 @@ dev.off()
 
 # calculate the factors loadings
 s = factor.scores (Q_EFA.means, quest.1.efa) # 
-
+s
 
 #---------------------------- USE FACTOR AS AS MODERATOR IN THE MAIN ANALYSIS ----------
 
@@ -967,7 +967,7 @@ qqnorm(residuals(inter.work))
 hist(residuals(inter.work))
 
 # stress social
-inter.social = lmer(normPressFreq~ group*cue*prepost*ML2 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE, control = lmerControl(optimizer ="bobyqa"))
+inter.social = lmer(normPressFreq~ group*cue*prepost*ML3 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE, control = lmerControl(optimizer ="bobyqa"))
 summary(inter.social)
 Confint(inter.social, level = 0.95) 
 
@@ -977,7 +977,7 @@ qqnorm(residuals(inter.social))
 hist(residuals(inter.social))
 
 # stress affect
-inter.affect = lmer(normPressFreq~ group*cue*prepost*ML3 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE, control = lmerControl(optimizer ="bobyqa"))
+inter.affect = lmer(normPressFreq~ group*cue*prepost*ML4 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE, control = lmerControl(optimizer ="bobyqa"))
 summary(inter.affect)
 Confint(inter.affect, level = 0.95) 
 
@@ -987,7 +987,7 @@ qqnorm(residuals(inter.affect))
 hist(residuals(inter.affect))
 
 # implusivity
-inter.implusivity = lmer(normPressFreq~ group*cue*prepost*ML4 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE,control = lmerControl(optimizer ="bobyqa"))
+inter.implusivity = lmer(normPressFreq~ group*cue*prepost*ML2 + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE,control = lmerControl(optimizer ="bobyqa"))
 summary(inter.implusivity)
 Confint(inter.implusivity, level = 0.95) 
 
@@ -999,13 +999,13 @@ hist(residuals(inter.implusivity))
 # test and different points of the model to understand interaction
 
 # Stress affective -1 SD people low on affectiv stress have effect of overtraining
-EFA_CHANGE$AFF_pSD <- scale(EFA_CHANGE$ML3, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
+EFA_CHANGE$AFF_pSD <- scale(EFA_CHANGE$ML4, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
 sslop.pSD = lmer(normPressFreq~ group*cue*prepost*AFF_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE,control = lmerControl(optimizer ="bobyqa"))
 summary(sslop.pSD)
 Confint(sslop.pSD, level = 0.95) 
 
 # Stress Affective +1 SD people high on affective stress have effect of overtraining
-EFA_CHANGE$AFF_mSD <- scale(EFA_CHANGE$ML3, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
+EFA_CHANGE$AFF_mSD <- scale(EFA_CHANGE$ML4, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
 sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*AFF_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE, control = lmerControl(optimizer ="bobyqa"))
 summary(sslop.mSD)
 Confint(sslop.mSD, level = 0.95) 
@@ -1025,7 +1025,7 @@ AFF.means$StressAffect<- factor(AFF.means$StressAffect)
 lowAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '1'),
                           factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
-F_to_eta2(f = c(3.98), df = c(1), df_error = c(95))
+F_to_eta2(f = c(4.38), df = c(1), df_error = c(95))
 
 
 # Bayes factors 
@@ -1038,7 +1038,7 @@ lowAff.BF[1]
 highAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '2'),
                            factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
-F_to_eta2(f = c(0.35), df = c(1), df_error = c(94))
+F_to_eta2(f = c(0.13), df = c(1), df_error = c(94))
 
 # Bayes factors
 highAff.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means,  StressAffect == '2'), 
@@ -1052,9 +1052,10 @@ AFF.means$group           <- dplyr::recode(AFF.means$group, "1-day" = "Moderate"
 
 
 pp <- ggplot(AFF.means, aes(x = group, y = normChangeBehav, fill = group, color = group)) +
-  geom_flat_violin(scale = "count", trim = FALSE, alpha = .1, aes(x = group, y = normChangeBehav, fill = factor(group, levels = c("Moderate","Extensive" ))), color = NA)+
+  geom_flat_violin(scale = "count", trim = FALSE, alpha = .2, aes(x = group, y = normChangeBehav, fill = factor(group, levels = c("Moderate","Extensive" ))), color = NA)+
   geom_point(alpha = .3, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
-  stat_summary(fun.data = mean_se, geom = "crossbar",width = 0.85 , alpha = 0.1) +
+  #stat_summary(fun.data = mean_se, geom = "crossbar",width = 0.85 , alpha = 0.1) +
+  geom_boxplot(alpha=0,outlier.alpha = 0) +
   ylab('Behavioral adaptation index')+
   xlab('Amount of Training')+
   facet_grid(~StressAffect)+
@@ -1114,8 +1115,7 @@ dev.off()
 
 # calculate the factors loadings
 s = factor.scores (Q_EFA.means, quest.1.efa) # 
-
-
+s
 #---------------------------- USE FACTOR AS AS MODERATOR IN THE MAIN ANALYSIS ----------
 
 # merge with the FULL database
@@ -1138,13 +1138,13 @@ hist(residuals(inter.whole))
 # test and different points of the model to understand interaction
 
 # Stress affective -1 SD people low in axiety/stress have effect of overtraining
-EFA_CHANGE$AFF_pSD <- scale(EFA_CHANGE$ML3, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
+EFA_CHANGE$AFF_pSD <- scale(EFA_CHANGE$ML4, scale = T) + 1 # here I'm going to test at - 1SD (so people that are low in anxiety)
 sslop.pSD = lmer(normPressFreq~ group*cue*prepost*AFF_pSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE,control = lmerControl(optimizer ="bobyqa"))
 summary(sslop.pSD)
 Confint(sslop.pSD, level = 0.95) 
 
 # Social Isolation +1 SD people high in axiety/stress have effect of overtraining
-EFA_CHANGE$AFF_mSD <- scale(EFA_CHANGE$ML3, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
+EFA_CHANGE$AFF_mSD <- scale(EFA_CHANGE$ML4, scale = T) - 1 # here I'm going to test at + 1SD (so people that are high in anxiety)
 sslop.mSD = lmer(normPressFreq ~ group*cue*prepost*AFF_mSD + itemxcondition + site + (1+cue*prepost+itemxcondition|ID), data = EFA_CHANGE, REML=FALSE,control = lmerControl(optimizer ="bobyqa"))
 summary(sslop.mSD)
 Confint(sslop.mSD, level = 0.95) 
@@ -1163,7 +1163,7 @@ AFF.means$StressAffect<- factor(AFF.means$StressAffect)
 lowAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '1'),
                            factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
-F_to_eta2(f = c(4.84), df = c(1), df_error = c(95))
+F_to_eta2(f = c(3.65), df = c(1), df_error = c(95))
 
 
 # Bayes factors 
@@ -1176,7 +1176,7 @@ lowAnx.BF[1]
 highAnx.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '2'),
                             factorize = F, anova_table = list(correction = "GG",es = "pes"))
 # effect sizes (90%CI)
-F_to_eta2(f = c(0.34), df = c(1), df_error = c(94))
+F_to_eta2(f = c(0.41), df = c(1), df_error = c(94))
 
 
 # Bayes factors
@@ -1191,9 +1191,10 @@ AFF.means$group           <- dplyr::recode(AFF.means$group, "1-day" = "Moderate"
 
 
 pp <- ggplot(AFF.means, aes(x = group, y = normChangeBehav, fill = group, color = group)) +
-  geom_flat_violin(scale = "count", trim = FALSE, alpha = .1, aes(x = group, y = normChangeBehav, fill = factor(group, levels = c("Moderate","Extensive" ))), color = NA)+
+  geom_flat_violin(scale = "count", trim = FALSE, alpha = .2, aes(x = group, y = normChangeBehav, fill = factor(group, levels = c("Moderate","Extensive" ))), color = NA)+
   geom_point(alpha = .3, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
-  stat_summary(fun.data = mean_se, geom = "crossbar",width = 0.85 , alpha = 0.1) +
+  #stat_summary(fun.data = mean_se, geom = "crossbar",width = 0.85 , alpha = 0.1) +
+  geom_boxplot(alpha=0,outlier.alpha = 0) +
   ylab('Behavioral adaptation index')+
   xlab('Amount of Training')+
   facet_grid(~StressAffect)+
@@ -1369,9 +1370,10 @@ MC$group    <- dplyr::recode(MC$group, "1-day" = "Moderate", "3-day" = "Extensiv
 
 
 pp <- ggplot(MC, aes(x = group, y = normChangeBehav, fill = group, color = group)) +
-  geom_flat_violin(scale = "count", trim = FALSE, alpha = .1, aes(x = group, y = normChangeBehav, fill = factor(group, levels = c("Moderate","Extensive" ))), color = NA)+
-  geom_point(alpha = .3, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
-  stat_summary(fun.data = mean_se, geom = "crossbar",width = 0.85 , alpha = 0.1) +
+  geom_flat_violin(scale = "count", trim = FALSE, alpha = .3, aes(x = group, y = normChangeBehav, fill = factor(group, levels = c("Moderate","Extensive" ))), color = NA)+
+  geom_point(alpha = .2, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
+  #stat_summary(fun.data = mean_se, geom = "crossbar",width = 0.85 , alpha = 0.1) +
+  geom_boxplot(alpha=0,outlier.alpha = 0) +
   ylab('Behavioral adaptation index')+
   xlab('Amount of Training')+
   facet_grid(scale~factor(level,levels=c("Lower Level","Higher Level")))+

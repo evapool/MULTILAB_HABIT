@@ -98,6 +98,8 @@ CHANGE <- ddply(CHANGE, .(ID,prepost), countTrialxCondition)
 # get total number of participants included
 plyr::count(CHANGE$ID) # note that Caltech2 used a slightly different protocol so there are less repeat per condition
 
+CHANGE$countTrialxCondition <- factor(CHANGE$countTrialxCondition)
+
 # subset by site
 C.CALTECH = subset(CHANGE, site == 'Caltech1')
 C.CALTECH2= subset(CHANGE, site == 'Caltech2')
@@ -893,14 +895,6 @@ dev.off()
 
 
 
-
-
-
-
-
-
-
-
 #---------------------------------------------------------------------------
 #                       INDIVIDUAL DIFFERENCES 
 #---------------------------------------------------------------------------
@@ -981,6 +975,7 @@ inter.affect = lmer(normPressFreq~ group*cue*prepost*ML4 + itemxcondition + site
 summary(inter.affect)
 Confint(inter.affect, level = 0.95) 
 
+
 # ----- assumptions check
 plot(fitted(inter.affect),residuals(inter.affect)) 
 qqnorm(residuals(inter.affect))
@@ -1013,9 +1008,21 @@ Confint(sslop.mSD, level = 0.95)
 #---------------------------- FIGURE 5 ---------------------------
 
 # this tests the model predictions as we do in lmer but does not allow to display distributions
-AFF.means <- aggregate(EFA_CHANGE$normChangeBehav, by = list(EFA_CHANGE$ID, EFA_CHANGE$group, EFA_CHANGE$site, EFA_CHANGE$AFF_pSD, EFA_CHANGE$AFF_mSD, EFA_CHANGE$ML3), FUN='mean', na.rm = T) # extract means
+AFF.means <- aggregate(EFA_CHANGE$normChangeBehav, by = list(EFA_CHANGE$ID, EFA_CHANGE$group, EFA_CHANGE$site, EFA_CHANGE$AFF_pSD, EFA_CHANGE$AFF_mSD, EFA_CHANGE$ML4), FUN='mean', na.rm = T) # extract means
 colnames(AFF.means) <- c('ID','group','site', 'AFF_pSD', 'AFF_mSD','AFF', 'normChangeBehav')
 
+
+ggplot(AFF.means, aes(x = group, y = normChangeBehav, fill = group, color = group)) +
+  geom_flat_violin(scale = "count", trim = FALSE, alpha = .2, aes(x = group, y = normChangeBehav, fill = factor(group, levels = c("Moderate","Extensive" ))), color = NA)+
+  geom_point(alpha = .3, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
+  #stat_summary(fun.data = mean_se, geom = "crossbar",width = 0.85 , alpha = 0.1) +
+  geom_boxplot(alpha=0,outlier.alpha = 0) +
+  ylab('Behavioral adaptation index')+
+  xlab('Amount of Training')+
+  facet_grid(~StressAffect)+
+  scale_fill_manual(values=c("#56B4E9", "#0F2080")) +
+  scale_color_manual(values=c("#56B4E9", "#092C48")) +
+  theme_bw()
 
 # figure for AFF: Streess Affect
 AFF.means$StressAffect<- ntile(AFF.means$AFF, 2)
@@ -1031,7 +1038,7 @@ F_to_eta2(f = c(4.38), df = c(1), df_error = c(95))
 # Bayes factors 
 lowAff.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means, StressAffect  == '1'), 
                      whichRandom = "ID", iterations = 50000)
-lowAff.BF <- recompute(lowAnx.BF, iterations = 50000)
+lowAff.BF <- recompute(lowAff.BF, iterations = 50000)
 lowAff.BF[1]
 
 # high stress affect
@@ -1152,7 +1159,7 @@ Confint(sslop.mSD, level = 0.95)
 #---------------------------- FIGURE S1 ---------------------------
 
 # this tests the model predictions as we do in lmer but does not allow to display distributions
-AFF.means <- aggregate(EFA_CHANGE$normChangeBehav, by = list(EFA_CHANGE$ID, EFA_CHANGE$group, EFA_CHANGE$site, EFA_CHANGE$AFF_pSD, EFA_CHANGE$AFF_mSD, EFA_CHANGE$ML3), FUN='mean', na.rm = T) # extract means
+AFF.means <- aggregate(EFA_CHANGE$normChangeBehav, by = list(EFA_CHANGE$ID, EFA_CHANGE$group, EFA_CHANGE$site, EFA_CHANGE$AFF_pSD, EFA_CHANGE$AFF_mSD, EFA_CHANGE$ML4), FUN='mean', na.rm = T) # extract means
 colnames(AFF.means) <- c('ID','group','site', 'AFF_pSD', 'AFF_mSD','AFF', 'normChangeBehav')
 
 # figure for AFF: Streess Affect

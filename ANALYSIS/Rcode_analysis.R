@@ -1,8 +1,8 @@
 ####################################################################################################
 #                                                                                                  #
 #                                                                                                  #                      
-#         CHALLENGES AND PROMISES IN THE EXPERIMENTAL INDUCTION OF HABITS BY VARYING               # 
-#               THE AMOUNT OF TRAINING: A MULTI-LABORATORY INVESTIGATION                           #
+#         DETERMINING THE EFFECTO FO TRAINING DURATION ON THE BEHAVIORAL EXPRESSION OF 
+#               HABITIAL CONTROL IN HUMANS: A MULTI-LABORATORY INVESTIVATION
 #                                                                                                  #
 #                                                                                                  #
 #                    International consortium for the study of habits                              #
@@ -10,7 +10,7 @@
 #                                                                                                  #
 # Created by E.R.P. on NOVEMBER 2018                                                               #
 # Verified by R.G on DECEMBER 2018                                                                 #
-# Modified by E.R.P on JULY 2020                                                                   #
+# Modified by E.R.P on MARCH 2021ß                                                                   #
 # Verified by R.G and A.F. on August 2020                                                          #
 ####################################################################################################
 
@@ -35,6 +35,7 @@ library(psych)
 library(emmeans)
 library(devtools)
 library(effectsize)
+library(GPArotation)
 
 #---------------------------------------------------------------------------
 #                    PRELIMINARY STUFF 
@@ -312,9 +313,6 @@ dev.off()
 
 
 
-
-
-
 #---------------------------------------------------------------------------
 #                  OUTCOME DEVALUATION CHANGES BY SITE
 #---------------------------------------------------------------------------
@@ -413,7 +411,42 @@ int.t.BF <- recompute(int.t.BF, iterations = 50000)
 int.t.BF[4]/int.t.BF[3]
 
 
+#----------------------------- FIGURE 3 RAW DATA PER SITE  -------------------------
+CHANGE.all.means <- aggregate(CHANGE$pressFreq, by = list(CHANGE$ID, CHANGE$group, CHANGE$prepost, CHANGE$cue, CHANGE$site), FUN='mean') # extract means
+colnames(CHANGE.all.means) <- c('ID','group','prepost','cue','site','pressFreq')
 
+CHANGE.all.means$prepost   <- dplyr::recode(CHANGE.all.means$prepost, "pre" = "Pre", "post" = "Post" )
+CHANGE.all.means$site      <- dplyr::recode(CHANGE.all.means$site, "Caltech1" = "Pasadena 1",
+                              "Caltech2" = "Pasadena 2",
+                              "Tel_Aviv" = "Tel-Aviv")
+CHANGE.all.means$group  <- dplyr::recode(CHANGE.all.means$group, "1-day" = "Moderate", "3-day" = "Extensive" )
+
+pp <- ggplot(CHANGE.all.means, aes(x = interaction(factor(cue, level =c("Valued","Devalued", "Rest")),factor(prepost, level = c("Pre","Post"))), y = pressFreq, fill = cue, color = site)) +
+  geom_point(alpha = .1, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
+  geom_line(data = CHANGE.all.means, aes(group = interaction(ID,prepost), y = pressFreq, color = site), alpha = .2, size = 0.3) +
+  geom_boxplot(alpha=0.5,outlier.alpha = 0, position = position_dodge(width = 0)) +
+  ylab('Responses per second')+
+  xlab('Devaluation') +
+  facet_grid(group~site,scales = "free") +
+  scale_x_discrete(drop = FALSE, labels=c("Valued.Pre" = "", "Devalued.Pre" = "Pre",
+                            "Valued.Post" = "", "Devalued.Post" = "Post",
+                            "Rest.Pre"="", "Rest.Post" = ""))+
+  scale_fill_manual(values=c("dark gray", "white")) +
+  scale_color_manual(values=c("#660099", "#006600","#CD853F", "#0F2080","#990000")) +
+  guides(color = FALSE)+
+  theme_bw()
+
+ppp <- pp + theme_bw(base_size = 18, base_family = "Helvetica")+
+  theme(strip.text.x = element_text(size = 18, face = "bold"),
+        strip.text.y = element_text(size = 18, face = "bold"),
+        strip.background = element_rect(color="white", fill="white", linetype="solid"),
+        axis.ticks.x = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.title.y = element_text(size = 14, face = "bold"))
+
+pdf(file.path(figures_path,'Figure_3_RawBySite.pdf'), width = 15, height= 8)
+print(ppp)
+dev.off()
 
 
 
@@ -424,7 +457,6 @@ int.t.BF[4]/int.t.BF[3]
 #---------------------------- OPEN AND FORMAT OTHER DATABASES  -------------------
 TRICOMI   <- read.delim(file.path(home_path,'DATA','Tricomi_2009.txt'), header = T, sep ='') # read in dataset
 DEWIT_full<- read.delim(file.path(home_path,'DATA','deWit_2017.txt'), header = T, sep ='') # read in dataset
-CECELI    <- read.delim(file.path(home_path,'DATA','Ceceli_inprep.txt'), header = T, sep ='') # read in dataset
 
 
 #---------------------------- TRICOMI
@@ -434,38 +466,8 @@ TRICOMI$cue     <- factor(TRICOMI$cue)
 TRICOMI$prepost <- factor(TRICOMI$prepost)
 TRICOMI$group   <- factor(TRICOMI$group)
 TRICOMI$cue     <- dplyr::recode(TRICOMI$cue, "val" = "Valued", "dev" = "Devalued" )
-# normalize
+# scale
 TRICOMI$normPressFreq   <- scale(TRICOMI$PressFreq)
-
-
-#---------------------------- CECELI
-# get the last run of the last training session and all the runs after satiation
-CECELI        <- subset(CECELI, cue == 'Valued' | cue == 'Devalued')
-CECELI$normPressFreq   <- scale(CECELI$pressFreq)
-
-CECELI.DAY1   <- subset(CECELI, group == '1-day')
-CECELI.DAY3   <- subset(CECELI, group == '3-day')
-
-CECELI.DAY1 <- ddply(CECELI.DAY1, .(ID), transform, averagePress  = mean(pressFreq[prepost=="pre"]))
-CECELI.DAY3 <- ddply(CECELI.DAY3, .(ID), transform, averagePress  = mean(pressFreq[prepost=="pre"]))
-
-CECELI.C.DAY1 <- subset(CECELI.DAY1, run == '2' | run == '3')
-CECELI.DAY3   <- subset(CECELI.DAY3, session == '3') # we want the last day only
-CECELI.C.DAY3 <- subset(CECELI.DAY3, run == '4' | run == '5')
-
-CECELI.CHANGE <- rbind(CECELI.C.DAY1,CECELI.C.DAY3)
-
-# get variable of interest
-CECELI.CHANGE <- ddply(CECELI.CHANGE, .(ID), transform, normChangeBehav  = (mean(normPressFreq[prepost=="post" & cue=='Valued']) - mean(normPressFreq[prepost=="pre" & cue=='Valued'])) - (mean(normPressFreq[prepost=="post" & cue=='Devalued']) - mean(normPressFreq[prepost=="pre" & cue=='Devalued'])))
- 
-# average the data
-CECELI <- CECELI.CHANGE
-
-# define factors of interest in Ceceli
-CECELI$ID        <- factor(CECELI$ID)
-CECELI$cue       <- factor(CECELI$cue)
-CECELI$prepost   <- factor(CECELI$prepost)
-CECELI$group     <- factor(CECELI$group)
 
 
 #----------------------------  DEWIT
@@ -499,10 +501,6 @@ DEWIT.meta <- subset(DEWIT, prepost == 'pre')
 TRICOMI <- ddply(TRICOMI, .(ID,group,cue), transform, metaBehav  = mean(normPressFreq[prepost=="post"]) - normPressFreq[prepost=="pre"]) 
 TRICOMI.meta <- subset(TRICOMI, prepost == 'pre')
 
-CECELI <- ddply(CECELI, .(ID,group,cue), transform, metaBehav  = mean(normPressFreq[prepost=="post"]) - mean(normPressFreq[prepost=="pre"])) 
-CECELI.meta <- ddply(CECELI, .(ID,group,cue,prepost), summarise, metaBehav= mean((metaBehav))) # we need the mean not to increase the N artifically
-CECELI.meta <- subset(CECELI.meta, prepost == 'pre') # we need to subset not to have doubles
-
 
 # subset by site and crete the prepost index
 C.CALTECH.day1 = subset(CHANGE.mean, site == 'Caltech1' &  group == "1-day")
@@ -519,8 +517,6 @@ TRICOMI.day1   = subset(TRICOMI.meta, group == "1-day")
 TRICOMI.day3   = subset(TRICOMI.meta, group == "3-day")
 DEWIT.day1     = subset(DEWIT.meta, group == "1-day")
 DEWIT.day3     = subset(DEWIT.meta, group == "3-day")
-CECELI.day1    = subset(CECELI.meta, group == "1-day")
-CECELI.day3    = subset(CECELI.meta, group == "3-day")
 
 
 # estimate mean standard deviation and correlation
@@ -592,14 +588,6 @@ estimate.dewit.day3  = summaryBy(metaBehav ~ cue, data = DEWIT.day3,
                                  FUN = function(x) { c(m = mean(x), s = sd(x), n = length(x)) } )
 corr.dewit.day3 = rmcorr(subj,metaBehav[cue == 'Valued'],metaBehav[cue == 'Devalued'],dataset = DEWIT.day3)
 
-# Ceceli
-estimate.ceceli.day1  = summaryBy(metaBehav ~ cue, data = CECELI.day1,
-                                 FUN = function(x) { c(m = mean(x), s = sd(x), n = length(x)) } )
-corr.ceceli.day1 = rmcorr(ID,metaBehav[cue == 'Valued'],metaBehav[cue == 'Devalued'],dataset = CECELI.day1)
-
-estimate.ceceli.day3  = summaryBy(metaBehav ~ cue, data = CECELI.day3,
-                                 FUN = function(x) { c(m = mean(x), s = sd(x), n = length(x)) } )
-corr.ceceli.day3 = rmcorr(ID,metaBehav[cue == 'Valued'],metaBehav[cue == 'Devalued'],dataset = CECELI.day3)
 
 # build database for meta-analysis
 site           = c ("ICHB: Pasadena1: 1-day "               , 
@@ -615,9 +603,7 @@ site           = c ("ICHB: Pasadena1: 1-day "               ,
                     "De Wit (2018-jep:g): 1-day"             ,
                     "De Wit (2018-jep:g): 3-day"             ,
                     "Tricomi (2009-ejn): 1-day"              ,
-                    "Tricomi (2009-ejn): 3-day"              ,
-                    "Ceceli (in prep): 1-day"                ,
-                    "Ceceli (in prep): 3-day")  
+                    "Tricomi (2009-ejn): 3-day")
 
 year           = c ("2017-sept"                                   ,
                     "2017-sept"                                   ,
@@ -632,13 +618,9 @@ year           = c ("2017-sept"                                   ,
                     "2018-jep:g"                                  ,
                     "2018-jep:g"                                  ,
                     "2009-ejn"                                    ,
-                    "2009-ejn"                                    ,
-                    "2017-???"                                    ,
-                    "2017-???")
+                    "2009-ejn")
 
 training       = c ("moderate-trainig"                           ,
-                    "extensive-trainig"                          ,
-                    "moderate-trainig"                           ,
                     "extensive-trainig"                          ,
                     "moderate-trainig"                           ,
                     "extensive-trainig"                          ,
@@ -666,9 +648,7 @@ mean_devalued   = c (estimate.caltech.day1$metaBehav.m[1]        ,
                      estimate.dewit.day1$metaBehav.m[1]            ,
                      estimate.dewit.day3$metaBehav.m[1]            ,
                      estimate.tricomi.day1$metaBehav.m[1]          ,
-                     estimate.tricomi.day3$metaBehav.m[1]          ,
-                     estimate.ceceli.day1$metaBehav.m[1]           ,
-                     estimate.ceceli.day3$metaBehav.m[1]) # mean difference prepost for devalued
+                     estimate.tricomi.day3$metaBehav.m[1])
 
 mean_valued  = c (estimate.caltech.day1$metaBehav.m[2]         , 
                   estimate.caltech.day3$metaBehav.m[2]         , 
@@ -683,9 +663,7 @@ mean_valued  = c (estimate.caltech.day1$metaBehav.m[2]         ,
                   estimate.dewit.day1$metaBehav.m[2]            ,
                   estimate.dewit.day3$metaBehav.m[2]            ,
                   estimate.tricomi.day1$metaBehav.m[2]          ,
-                  estimate.tricomi.day3$metaBehav.m[2]         ,
-                  estimate.ceceli.day1$metaBehav.m[2]          ,
-                  estimate.ceceli.day3$metaBehav.m[2]) # mean difference prepost for valued) # mean difference prepost for valued
+                  estimate.tricomi.day3$metaBehav.m[2])
 
 std_devalued  = c (estimate.caltech.day1$metaBehav.s[1]       , 
                    estimate.caltech.day3$metaBehav.s[1]         , 
@@ -700,9 +678,7 @@ std_devalued  = c (estimate.caltech.day1$metaBehav.s[1]       ,
                    estimate.dewit.day1$metaBehav.s[1]           ,
                    estimate.dewit.day3$metaBehav.s[1]           ,
                    estimate.tricomi.day1$metaBehav.s[1]         ,
-                   estimate.tricomi.day3$metaBehav.s[1]         ,
-                   estimate.ceceli.day1$metaBehav.s[1]         ,
-                   estimate.ceceli.day3$metaBehav.s[1]) # standard deviation  of the difference prepost for devalued)
+                   estimate.tricomi.day3$metaBehav.s[1])
 
 std_valued  = c (estimate.caltech.day1$metaBehav.s[2]          , 
                  estimate.caltech.day3$metaBehav.s[2]         , 
@@ -717,10 +693,7 @@ std_valued  = c (estimate.caltech.day1$metaBehav.s[2]          ,
                  estimate.dewit.day1$metaBehav.s[2]           ,
                  estimate.dewit.day3$metaBehav.s[2]           ,
                  estimate.tricomi.day1$metaBehav.s[2]         ,
-                 estimate.tricomi.day3$metaBehav.s[2]         ,
-                 estimate.ceceli.day1$metaBehav.s[2]         ,
-                 estimate.ceceli.day3$metaBehav.s[2]) # standard deviation  of the difference prepost for valued)
-
+                 estimate.tricomi.day3$metaBehav.s[2])
 
 n_devalued  = c (estimate.caltech.day1$metaBehav.n[1]           , 
                  estimate.caltech.day3$metaBehav.n[1]         , 
@@ -735,9 +708,7 @@ n_devalued  = c (estimate.caltech.day1$metaBehav.n[1]           ,
                  estimate.dewit.day1$metaBehav.n[1]            ,
                  estimate.dewit.day3$metaBehav.n[1]            ,
                  estimate.tricomi.day1$metaBehav.n[1]          ,
-                 estimate.tricomi.day3$metaBehav.n[1]          ,
-                 estimate.ceceli.day1$metaBehav.n[1]          ,
-                 estimate.ceceli.day3$metaBehav.n[1]) # n participants  of the difference prepost for devalued)
+                 estimate.tricomi.day3$metaBehav.n[1])
 
 n_valued  = c (estimate.caltech.day1$metaBehav.n[2]           , 
                estimate.caltech.day3$metaBehav.n[2]         , 
@@ -752,9 +723,7 @@ n_valued  = c (estimate.caltech.day1$metaBehav.n[2]           ,
                estimate.dewit.day1$metaBehav.n[2]           ,
                estimate.dewit.day3$metaBehav.n[2]           ,
                estimate.tricomi.day1$metaBehav.n[2]         ,
-               estimate.tricomi.day3$metaBehav.n[2]         ,
-               estimate.ceceli.day1$metaBehav.n[2]         ,
-               estimate.ceceli.day3$metaBehav.n[2]) # n participants of the difference prepost for valued)
+               estimate.tricomi.day3$metaBehav.n[2])
 
 ri  = c (corr.caltech.day1$r         , 
          corr.caltech.day3$r         , 
@@ -769,18 +738,16 @@ ri  = c (corr.caltech.day1$r         ,
          corr.dewit.day1$r           ,
          corr.dewit.day3$r           ,
          corr.tricomi.day1$r         ,
-         corr.tricomi.day3$r         ,
-         corr.ceceli.day1$r         ,
-         corr.ceceli.day3$r) # correlation
-
+         corr.tricomi.day3$r)
 
 #---------------------------- RE META  -------------------
 
 metadata = data.frame( site, year, training, mean_valued, mean_devalued, std_valued, std_devalued, n_valued, n_devalued,ri)
 
-meta.data <- escalc(measure="MC", m1i=mean_valued, m2i=mean_devalued, sd1i=std_valued,sd2i=std_devalued, ni=n_valued,
-                    ri=ri,  data=metadata)
 
+
+meta.data <- escalc(measure="SMCC", m1i=mean_valued, m2i=mean_devalued, sd1i=std_valued,sd2i=std_devalued, ni=n_valued,
+                    ri=ri,  data=metadata) #"SMCC" for the standardized mean change using change score standardization.
 
 
 #--------------------------- fit random-effect model for the moderator analysis
@@ -803,9 +770,9 @@ par(cex=0.8, font = 2)### switch to bold font
 forest.plot <- forest(res.all,slab = (meta.data$site),xlim=c(-1.2,2),
                      ilab = cbind(meta.data$n_valued),
                      ilab.xpos=c(-0.3), cex=1,ylim=c(1.2,28),
-                     order=order(meta.data$training),rows=c(4:11
-                                                          ,17:24),
-                     xlab="Mean Change", mlab="", psize=1)
+                     order=order(meta.data$training),rows=c(4:10   
+                                                          ,17:23),
+                     xlab="Standardized Mean Change", mlab="", psize=1)
 
 ### add summary polygons for the three subgroups
 addpoly(res.day1, row=15.5, cex=0.75, mlab="")
@@ -821,7 +788,7 @@ text(-1.2, c(30,12,25), pos=4, c("Moderate training",
 # add column headings to the plot
 par(cex=0.8, font=4)### switch to bold font
 text(-1, 26.5, "STUDY",  pos=4)
-text( 2, 26.5, "MC [95% CI]", pos=2)
+text( 2, 26.5, "SMCC [95% CI]", pos=2)
 par(cex=1, font=3)### switch to bold font
 text(-0.3, 26.5, c("N"))
 
@@ -1018,12 +985,6 @@ acqC1.aov      <- aov_car(normChangeBehav  ~ group*AFF +Error(ID), data = AFF.me
 acqC1.adjmeans <- emmeans(acqC1.aov, specs = c("group"), by = "AFF", at = list(AFF= c(-1, 1)))
 acqC1.adjmeans
 
-# to compute BF10
-#full <- lmBF(normChangeBehav~ group*AFF  + ID, data = AFF.means, 
-                              #whichRandom = "ID", iterations = 50000)
-#null <- lmBF(normChangeBehav~ group+AFF  + ID, data = AFF.means, 
-               #whichRandom = "ID", iterations = 50000)
-#full/null
 
 acqC1.low.aov      <- aov_car(normChangeBehav  ~ group*AFF_pSD +Error(ID), data = AFF.means, observed = c("AFF"), factorize = F, anova_table = list(es = "pes"))
 acqC1.high.aov     <- aov_car(normChangeBehav  ~ group*AFF_mSD +Error(ID), data = AFF.means, observed = c("AFF"), factorize = F, anova_table = list(es = "pes"))
@@ -1104,74 +1065,3 @@ ppp <- adjmeans_plot+ theme_means_plots
 pdf(file.path(figures_path,'Figure_5_IndividualDifferences_pannelB.pdf'))
 print(ppp)
 dev.off()
-
-  
-#---------------------------- EXTRA ANALYSIS AND FIGURE WITH MENDIAN SPLIT (NOT REPORTED) ---------------------------
-
-# figure for AFF: Streess Affect
-AFF.means$StressAffect<- ntile(AFF.means$AFF, 2)
-AFF.means$StressAffect<- factor(AFF.means$StressAffect)
-
-# low stress affect
-lowAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '1'),
-                          factorize = F, anova_table = list(correction = "GG",es = "pes"))
-# effect sizes (90%CI)
-F_to_eta2(f = c(4.38), df = c(1), df_error = c(95))
-
-
-# Bayes factors 
-lowAff.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means, StressAffect  == '1'), 
-                     whichRandom = "ID", iterations = 50000)
-lowAff.BF <- recompute(lowAff.BF, iterations = 50000)
-lowAff.BF[1]
-
-# high stress affect
-highAff.stat    <- aov_car(normChangeBehav  ~ group + site + Error(ID), data = subset(AFF.means, StressAffect == '2'),
-                           factorize = F, anova_table = list(correction = "GG",es = "pes"))
-# effect sizes (90%CI)
-F_to_eta2(f = c(0.13), df = c(1), df_error = c(94))
-
-# Bayes factors
-highAff.BF <- anovaBF(normChangeBehav  ~ group + site, data = subset(AFF.means,  StressAffect == '2'), 
-                      whichRandom = "ID", iterations = 50000)
-highAff.BF <- recompute(highAff.BF, iterations = 50000)
-highAff.BF[1]
-
-# rename variables for plot
-AFF.means$StressAffect    <- dplyr::recode(AFF.means$StressAffect, "1" = "Lower Stress Affect", "2" = "Higher Stress Affect" )
-AFF.means$group           <- dplyr::recode(AFF.means$group, "1-day" = "Moderate", "3-day" = "Extensive" )
-
-
-pp <- ggplot(AFF.means, aes(x = group, y = normChangeBehav, fill = group, color = group)) +
-  geom_flat_violin(scale = "count", trim = FALSE, alpha = .2, aes(x = group, y = normChangeBehav, fill = factor(group, levels = c("Moderate","Extensive" ))), color = NA)+
-  geom_point(alpha = .3, position = position_jitterdodge(jitter.width = .5, jitter.height = 0)) +
-  #stat_summary(fun.data = mean_se, geom = "errorbar",width = 0.85 , alpha = 0.1) +
-  geom_boxplot(alpha=0,outlier.alpha = 0) +
-  ylab('Behavioral adaptation index')+
-  xlab('Amount of Training')+
-  facet_grid(~StressAffect)+
-  scale_fill_manual(values=c("#56B4E9", "#0F2080")) +
-  scale_color_manual(values=c("#56B4E9", "#092C48")) +
-  theme_bw()
-
-ppp <- pp + theme_bw(base_size = 20, base_family = "Helvetica")+
-  theme(strip.text.x = element_text(size = 18, face = "bold"),
-        strip.background = element_rect(color="white", fill="white", linetype="solid"),
-        legend.position="none",
-        legend.text  = element_blank(),
-        axis.title.x = element_text(size = 22),
-        axis.title.y = element_text(size = 22))
-
-pdf(file.path(figures_path,'Figure_5_IndividualDifferences.pdf'))
-print(ppp)
-dev.off()
-
-
-
-
-
-
-
-
-
-

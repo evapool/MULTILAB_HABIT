@@ -10,7 +10,7 @@
 #                                                                                                  #
 # Started  by E.R.P on NOVEMBER 2018                                                               #
 # Verified by R.G on DECEMBER 2018                                                                 #
-# Modified by  E.R.P on JULY 2020                                                                  #
+# Modified by  E.R.P on JUNE 2022                                                                 #
 ####################################################################################################
 
 
@@ -105,4 +105,27 @@ QUESTIONNAIRES_NS <- subset (QUESTIONNAIRES_NS,!ID == '299'  & !ID == '334' & !I
 
 # print the databse
 write.table(QUESTIONNAIRES_NS,file.path(home_path,'DATA','FULL_QUESTIONNAIRES.txt'),sep="\t",row.names=FALSE)
+
+
+#####################################################################################################
+# ----------------------------------------- DETAILS DEVALUATION PROCEDIRE---------------------------------------
+
+D.CALTECH1 <- read.delim(file.path(home_path,'DATA','CALTECH_V1_DEVALUATION_DETAILS.txt'), header = T, sep ='') # read in dataset
+D.HAMBURG  <- read.delim(file.path(home_path,'DATA','HAMBURG_DEVALUATION_DETAILS.txt'), header = T, sep ='') # read in dataset
+D.TELAVIV  <- read.delim(file.path(home_path,'DATA','TELAVIV_DEVALUATION_DETAILS.txt'), header = T, sep ='') # read in dataset
+D.CALTECH2 <- read.delim(file.path(home_path,'DATA','CALTECH_V2_DEVALUATION_DETAILS.txt'), header = T, sep ='') # read in dataset
+D.SYDNEY   <- read.delim(file.path(home_path,'DATA','SYDNEY_DEVALUATION_DETAILS.txt'), header = T, sep ='') # read in dataset
+
+tmp1 = join (D.CALTECH1, D.HAMBURG, type = "full")
+tmp2 = join (tmp1, D.CALTECH2, type = "full")
+tmp3 = join (tmp2, D.TELAVIV, type = 'full')
+DEVALUATIONDETAILS =  join (tmp3, D.SYDNEY, type = "full")
+# remove participant based on pre-reg criteria
+DEVALUATIONDETAILS  <- subset (DEVALUATIONDETAILS ,!ID == '234') # caltech 2 extream
+DEVALUATIONDETAILS  <- subset (DEVALUATIONDETAILS ,!ID == '299'  & !ID == '334' & !ID == '341' & !ID == '310' & !ID == '304' & !ID == '322' & !ID == '326' & !ID == '352' & !ID == '356' & !ID == '360' & !ID == '301') # automated exclusions in Telaviv
+
+
+# print database
+write.table(FULL,file.path(home_path,'DATA','DEVALUATIONDETAILS_DATABASE.txt'),sep="\t",row.names=FALSE)
+
 
